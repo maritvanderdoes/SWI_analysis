@@ -28,3 +28,5 @@ log in to the server by:
 - attach the screen by typing: screen -r <number>
 - when the job is finished, close the screen by typing: exit
   
+# help with git
+https://confluence.atlassian.com/bitbucketserver/basic-git-commands-776639767.html
