@@ -2,13 +2,13 @@
 project for improving analysis of SWI experiments on heterochronic genes
 
 # packages to install in conda environment:
->> python=3.6
-numpy=1.19
-matplotlib=3.3
-scikit-image=0.17
-scipy=1.5 
-seaborn = 0.11
-pandas=1.1
+> python=3.6 <br>
+numpy=1.19 <br>
+matplotlib=3.3 <br>
+scikit-image=0.17 <br>
+scipy=1.5  <br>
+seaborn = 0.11 <br>
+pandas=1.1 <br>
 
 # main scripts present:
 - swi_analysis_mcherry.py :runs the script
