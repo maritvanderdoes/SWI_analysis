@@ -27,7 +27,7 @@ log in to the server by:
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code>screen -ls</code>
 The output should look like
 > <code>There are screens on:</code> <br>
-  <code>     97684.pts-9.xenon7   (Detached)</code><br>
+  <code>  &nbsp; &nbsp;   97684.pts-9.xenon7   (Detached)</code><br>
   <code>    118940.pts-1.xenon7   (Detached)</code>
      
 - attach the screen by typing: <code>screen -r <i>number</i></code>
