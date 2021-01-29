@@ -18,7 +18,7 @@ pandas=1.1
 # How to run things from the server:
 log in to the server by:
 - connecting to pulse secure if you are not at the FMI
-- go to terminal, and connect with xenon7 by typing in the terminal: ssh  <code><i>username</i>@xenon7.fmi.ch</code>
+- go to terminal, and connect with xenon7 by typing in the terminal: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 - create a screen by typing: screen in the terimal
 - activate/install correct conda environment
 - go with ls and cd to the correct folder where the python script is located
