@@ -2,7 +2,7 @@
 project for improving analysis of SWI experiments on heterochronic genes
 
 # packages to install in conda environment:
->> python=3.6 <br>
+>> python=3.6
 numpy=1.19
 matplotlib=3.3
 scikit-image=0.17
