@@ -22,7 +22,7 @@ log in to the server by:
 - create a screen by typing: screen in the terimal
 - activate/install correct conda environment
 - go with ls and cd to the correct folder where the python script is located
-- run the python script by typing: python <name of the file.py>
+- run the python script by typing: <code> python <i>name of the file.py</i></code>
 - disattach from screen by pressing: Contr+<kbd>a</kbd>,d
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: screen -ls
 - attach the screen by typing: screen -r <number>
