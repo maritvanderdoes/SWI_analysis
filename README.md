@@ -32,7 +32,7 @@ The output should look like:
      
 - attach the screen by typing: <code>screen -r <i>number</i></code>
   - The screens will be displayed. <br>
-  **IMPORTANT**: Typing <code>screen</code> will make a new screen.
+  - **IMPORTANT**: Typing <code>screen</code> will make a new screen.
 - when the job is finished, close the screen by typing: <code>exit</code>
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
