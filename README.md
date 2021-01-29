@@ -20,7 +20,7 @@ log in to the server by:
 - connecting to pulse secure if you are not at the FMI
 - go to terminal, and connect with xenon7 by typing in the terminal: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 - create a screen by typing: screen in the terimal
-- activate/install correct conda environment
+- activate/install correct conda environment: <code> conda activate <i>SWI</i> </code>
 - go with ls and cd to the correct folder where the python script is located
 - run the python script by typing: <code> python <i>name of the file.py</i></code>
 - disattach from screen by pressing: Contr+<kbd>a</kbd>,d
