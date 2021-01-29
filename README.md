@@ -21,9 +21,9 @@ log in to the server by:
 - go to terminal, and connect with xenon7 by typing in the terminal: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 - create a screen by typing: screen in the terimal
 - activate/install correct conda environment: <code> conda activate <i>SWI</i> </code>
-- go with ls and cd to the correct folder where the python script is located
+- go with <code>ls</code> and <code>cd</code> to the correct folder where the python script is located
 - run the python script by typing: <code> python <i>name of the file.py</i></code>
-- disattach from screen by pressing: Contr+<kbd>a</kbd>,d
+- disattach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,d
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: screen -ls
 - attach the screen by typing: screen -r <number>
 - when the job is finished, close the screen by typing: exit
