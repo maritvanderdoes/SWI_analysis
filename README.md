@@ -23,8 +23,8 @@ log in to the server by:
 - activate/install correct conda environment: <code> conda activate <i>SWI</i> </code>
 - go with <code>ls</code> and <code>cd</code> to the correct folder where the python script is located
 - run the python script by typing: <code> python <i>name of the file.py</i></code>
-- disattach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,d
-- you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: screen -ls
+- disattach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,  <kbd>ctrl</kbd>+<kbd>d</kbd>
+- you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code> screen -ls </code>
 - attach the screen by typing: screen -r <number>
 - when the job is finished, close the screen by typing: exit
   
