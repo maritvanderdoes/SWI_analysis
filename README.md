@@ -26,7 +26,7 @@ log in to the server by:
 - detach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,  <kbd>ctrl</kbd>+<kbd>d</kbd>
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code>screen -ls</code>
 The output should look like
-  - > <code>There are screens on:</code> <br>
+> <code>There are screens on:</code> <br>
   <code>     97684.pts-9.xenon7   (Detached)</code><br>
   <code>    118940.pts-1.xenon7   (Detached)</code>
      
