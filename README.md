@@ -27,7 +27,8 @@ log in to the server by:
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code> screen -ls </code>
 - attach the screen by typing: screen -r <number>
   - The screens will be displayed. **IMPORTANT** Typing <code> screen </code> will make a new screen.
-- when the job is finished, close the screen by typing: exit
+- when the job is finished, close the screen by typing: <code>exit</code>
+- If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
 # help with git
 https://confluence.atlassian.com/bitbucketserver/basic-git-commands-776639767.html
