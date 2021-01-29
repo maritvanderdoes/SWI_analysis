@@ -28,10 +28,10 @@ pandas=1.1 <br>
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code>screen -ls</code> <br>
 The output should look like:
   > <code>There are screens on:</code> <br>
-  <code>  &nbsp; &nbsp;   97684.pts-9.xenon7   (Detached)</code><br>
-  <code>  &nbsp; &nbsp;  118940.pts-1.xenon7   (Detached)</code>
+  <code>  &nbsp; &nbsp;   <b>97684</b>.pts-9.xenon7   (Detached)</code><br>
+  <code>  &nbsp; &nbsp;  <b>118940</b>.pts-1.xenon7   (Detached)</code>
      
-- To reattach the screen: <code>screen -r <i>number</i></code>
+- To reattach the screen: <code>screen -r <i>number</i></code> (i.e.: 97684)
   - The selected screen will now be displayed. <br>
   - **IMPORTANT**: Typing <code>screen</code> will make a new screen.
 - After the job is finished, kill the screen by typing: <code>exit</code>
