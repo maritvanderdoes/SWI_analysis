@@ -20,8 +20,8 @@ pandas=1.1 <br>
 - Open the terminal and type: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 - Create a new screen: <code>screen</code>
 - Activate the conda environment: <code>conda activate <i>SWI</i></code>
-  - To create a new conda environment: <code>conda create --name <i>SWI</i> python==3.6</code>
-  - To install each package: <code>conda install <i>numpy==1.19</i></code>
+  - To create a new conda environment: <code>conda create --name <i>SWI</i> python=3.6</code>
+  - To install each package: <code>conda install <i>numpy=1.19</i></code>
 - To find and set the working directory type <code>ls</code> and <code>cd</code>
 - To run the code of interest: <code>python <i>name of the file.py</i></code>
 - To detach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,  <kbd>ctrl</kbd>+<kbd>d</kbd>
