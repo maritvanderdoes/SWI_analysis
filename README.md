@@ -22,7 +22,9 @@ pandas=1.1 <br>
 - Activate the conda environment: <code>conda activate <i>SWI</i></code>
   - To create a new conda environment: <code>conda create --name <i>SWI</i> python=3.6</code>
   - To install each package: <code>conda install <i>numpy=1.19</i></code>
-- To find and set the working directory type <code>ls</code> and <code>cd</code>
+- To find and set the working directory type <code>ls</code> and <code>cd /</code>
+- Adjust in the python script the pathname where the images are located:
+  > dirpath = "\tungstenfs\scratch\ggrossha\Lucas\Live_Imaging\LJ_Lin28_Project_210116
 - To run the code of interest: <code>python <i>name of the file.py</i></code>
 - To detach from screen by pressing: <kbd>ctrl</kbd>+<kbd>a</kbd>,  <kbd>ctrl</kbd>+<kbd>d</kbd>
 - you can now close the terminal and the script will run. You can attach the screen again by first seeing the number of the screen by typing: <code>screen -ls</code> <br>
