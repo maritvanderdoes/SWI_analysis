@@ -7,8 +7,10 @@ numpy=1.19 <br>
 matplotlib=3.3 <br>
 scikit-image=0.17 <br>
 scipy=1.5  <br>
-seaborn = 0.11 <br>
+seaborn=0.11 <br>
 pandas=1.1 <br>
+
+A note on this package, it seems that the version of scikit-image might be 0.15 instead of 0.17.
 
 # Current codes in the GitHub
 - <code>swi_analysis_mcherry.py</code> :runs the script
