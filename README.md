@@ -1,14 +1,13 @@
 # SWI_analysis
 project for improving analysis of SWI experiments on heterochronic genes
 
-# packages to install in conda environment:
-> python=3.6 <br>
-numpy=1.19 <br>
-matplotlib=3.3 <br>
-scikit-image=0.17 <br>
-scipy=1.5  <br>
-seaborn=0.11 <br>
-pandas=1.1 <br>
+# Install in conda environment:
+
+```
+conda create -n swi-analysis python=3.6
+conda activate swi-analysis
+pip install .
+```
 
 A note on this package, it seems that the version of scikit-image might be 0.15 instead of 0.17.
 
