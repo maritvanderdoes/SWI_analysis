@@ -11,6 +11,13 @@ pip install .
 
 A note on this package, it seems that the version of scikit-image might be 0.15 instead of 0.17.
 
+## Running the task
+
+```
+luigi --module swi_analysis.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
+```
+
+
 # Current codes in the GitHub
 - <code>swi_analysis_mcherry.py</code> :runs the script
 - <code>marit_functions.py</code>  : contains all the functions that are needed to run the script
