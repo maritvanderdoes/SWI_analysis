@@ -47,7 +47,29 @@ The output should look like:
 - After the job is finished, kill the screen by typing: <code>exit</code>
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
-# help with git
+# git commands and links for help with git
+First time: clone the repository from the website with git clone link
+first check which branch you are, and the status of the branch: git status
+If you want to download the recent github version of the code: git fetch
+Check which branches are there:  
+- git branch --list
+create branch and go to the branch : 
+- git branch <name_branch> -> git checkout <name_branch> 
+or 
+- git checkout -b <name_branch>
+work on the code in the branch. When you are done with working, save the file, go back to the terminal and check the status of the folder.
+You should see your new file in red. Add the changes by typing:
+- git add <name_of_the_file>
+If you want to commit it to the folder:
+- git commit -m "commit message"
+to upload the newest version of your branch to gitub : git push 
+delete your branch git branch -d 
+
+
+
+
+https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet
+
 https://confluence.atlassian.com/bitbucketserver/basic-git-commands-776639767.html
 
 https://gist.github.com/rxaviers/7360908
