@@ -14,7 +14,7 @@ A note on this package, it seems that the version of scikit-image might be 0.15 
 ## Running the task
 
 ```
-luigi --module swi_analysis.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
+luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
 ```
 
 
