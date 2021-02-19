@@ -1,13 +1,22 @@
 import pandas as pd
 import luigi
 
-from .marit_functions import *  # import * is bad practice ;)
+from .marit_functions import image_lists_mcherry_GFP
+from .marit_functions import read_image
+from .marit_functions import img_thresholding
+from .marit_functions import select_zslides
+from .marit_functions import calculate_worm_properties
+from .marit_functions import get_meta_info_temp
+  # import * is bad practice ;)
 
 
 class SWIAnalysisTask(luigi.Task):
 
     #folder with images
     dirpath = luigi.Parameter()
+
+    #output folder
+    outputpath= luigi.Parameter()
 
     #channels
     channel_GFP = luigi.Parameter()  # '1Lucas-sim-488-561'
@@ -52,7 +61,7 @@ class SWIAnalysisTask(luigi.Task):
 
             #save in resultarray
             results.append(current_res)
-            break
+            
 
         #save file as csv
         with self.output().open('w') as out_file:
@@ -60,4 +69,16 @@ class SWIAnalysisTask(luigi.Task):
             df.to_csv(out_file, index=False)
 
     def output(self):
-        return luigi.LocalTarget(self.dirpath + "/results.csv")
+        return luigi.LocalTarget(self.outputpath + "/results.csv")
+
+
+# if __name__ == '__main__':
+#     luigi.build([
+#         SWIAnalysisTask(
+#             dirpath="/Users/Marit/Documents/work/HBL1gfp_worm6",
+#             outputpath="/Users/Marit/Documents",
+#             channel_GFP="w1Lucas-sim-488-561",
+#             channel_mcherry="w2Lucas-sim-561-488")
+#     ],
+#                 local_scheduler=True)
+    
