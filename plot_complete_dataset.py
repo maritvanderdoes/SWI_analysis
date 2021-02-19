@@ -43,7 +43,7 @@ for condition,colour,colour2 in zip(conditions,colors, colors2):
                 quantification_forworm=CSV_quantification.final_intensity[np.squeeze(index)] #gets out the valit quantifications for this worm
                 
                 
-                listtime.extend(time_forworm*min_image_taken/60)
+                listtime.extend((time_forworm-hatch)*min_image_taken/60)
                 listGFP.extend(quantification_forworm)
                 listcondition.extend(np.repeat(condition,time_forworm.size,axis=0))
                 
