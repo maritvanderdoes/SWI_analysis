@@ -1,12 +1,12 @@
 import pandas as pd
 import luigi
 
-from swi_analysis.marit_functions import image_lists_mcherry_GFP
-from swi_analysis.marit_functions import read_image
-from swi_analysis.marit_functions import img_thresholding
-from swi_analysis.marit_functions import select_zslides
-from swi_analysis.marit_functions import calculate_worm_properties
-from swi_analysis.marit_functions import get_meta_info_temp
+from marit_functions import image_lists_mcherry_GFP
+from marit_functions import read_image
+from marit_functions import img_thresholding
+from marit_functions import select_zslides
+from marit_functions import calculate_worm_properties
+from marit_functions import get_meta_info_temp
   # import * is bad practice ;)
 
 
