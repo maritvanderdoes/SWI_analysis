@@ -72,13 +72,13 @@ class SWIAnalysisTask(luigi.Task):
         return luigi.LocalTarget(self.outputpath + "/results.csv")
 
 
-if __name__ == '__main__':
-    luigi.build([
-        SWIAnalysisTask(
-            dirpath="/Users/Marit/Documents/work/HBL1gfp_worm6",
-            outputpath="/Users/Marit/Documents",
-            channel_GFP="w1Lucas-sim-488-561",
-            channel_mcherry="w2Lucas-sim-561-488")
-    ],
-                local_scheduler=True)
+# if __name__ == '__main__':
+#     luigi.build([
+#         SWIAnalysisTask(
+#             dirpath="/Users/Marit/Documents/work/HBL1gfp_worm6",
+#             outputpath="/Users/Marit/Documents",
+#             channel_GFP="w1Lucas-sim-488-561",
+#             channel_mcherry="w2Lucas-sim-561-488")
+#     ],
+#                 local_scheduler=True)
     
