@@ -48,16 +48,13 @@ The output should look like:
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
 # git commands and links for help with git
-- First time: clone the repository from the website with   <code> git clone (link of the repository </code>
+- First time: clone the repository from the website with   <code> git clone (link of the repository) </code>
 - Next times:
- check which branch you are, and the status of the branch: <code>git status</code>
- If you want to download the recent github version of the code: <code>git fetch </code> or <code>git pull </code>
-Check which branches are there:  
-- git branch --list
-create branch and go to the branch : 
-- git branch <name_branch> -> git checkout <name_branch> 
-or 
-- git checkout -b <name_branch>
+ check which branch you are, and the status of the branch: <code>git status </code>
+- Download the recent github version of the code: <code>git fetch </code> or <code>git pull </code>
+- Check which branches are there:  <code> git branch --list </code>
+- create branch and go to the branch <code> git branch (name_branch) -> git checkout <(ame_branch)  </code> 
+  or  <code> git checkout -b (name_branch) </code>
 work on the code in the branch. When you are done with working, save the file, go back to the terminal and check the status of the folder.
 You should see your new file in red. Add the changes by typing:
 - git add <name_of_the_file>
