@@ -48,7 +48,7 @@ The output should look like:
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
 # git commands and links for help with git
-First time: clone the repository from the website with git clone link
+- First time: clone the repository from the website with   <code> git clone link <code>
 first check which branch you are, and the status of the branch: git status
 If you want to download the recent github version of the code: git fetch
 Check which branches are there:  
