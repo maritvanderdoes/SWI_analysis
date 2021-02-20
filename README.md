@@ -57,7 +57,7 @@ The output should look like:
 - When you are done with working on the branch, save the file, go back to the terminal and check the status of the folder <code>git status </code>
 - Adjusted files are in red. Add the changes:  <code> git add (name_of_the_file) </code>
 - When new feature is implemented, commit the changes with a message what is improved: <code> git commit -m "commit message" </code>
-- Upload the newest version of your branch to gitub : <code> git push origin (name branch) </code>
+- Upload the newest version of your branch to gitub : <code> git push origin (namebranch) </code>
 - When you are finished with the issue, merge your branch to the main branch on github by doing a pull request
 - Delete your branch  <code> git branch -d (branchname) </code>
 
