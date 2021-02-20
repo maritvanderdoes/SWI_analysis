@@ -59,7 +59,7 @@ The output should look like:
 - When new feature is implemented, commit the changes with a message what is improved: <code> git commit -m "commit message" </code>
 - Upload the newest version of your branch to gitub : <code> git push origin (name branch) </code>
 - When you are finished with the issue, merge your branch to the main branch on github by doing a pull request
-- Delete your branch  <code> git branch -d </code>
+- Delete your branch  <code> git branch -d (branchname) </code>
 
 
 
