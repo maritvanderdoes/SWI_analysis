@@ -27,15 +27,15 @@ wormtoplot=2
 for condition,colour,colour2 in zip(conditions,colors, colors2):
     
     #Create an empty array, suitable for the number of conditions and valid worms that were analyzed 
-    array_int=np.zeros((np.size(np.where((CSV_annotation.condition==condition) &(CSV_annotation.quality==1))), int(max(CSV_quantification.Frame))))
+    array_int=np.zeros((np.size(np.where((CSV_annotation.Condition==condition) &(CSV_annotation.Quality==1))), int(max(CSV_quantification.Frame))))
     counter=0
 
     #Loop over worms and select the ones, having the correct condition and representing a valid chamber/worm --> Extract the time of hatching and escaping of these worms
-    for i,position in enumerate(CSV_annotation.position): #loops over all the worms
-        if (CSV_annotation.condition[i]==condition): #take the worm out with the specific condition
-            if CSV_annotation.quality[i]==1: #checks if the worm is good
-                hatch=CSV_annotation.hatch[i] #find the hatch time of this worm
-                escape=CSV_annotation.escape[i] #finds the escape time of this worm
+    for i,position in enumerate(CSV_annotation.Position): #loops over all the worms
+        if (CSV_annotation.Condition[i]==condition): #take the worm out with the specific condition
+            if CSV_annotation.Quality[i]==1: #checks if the worm is good
+                hatch=CSV_annotation.Hatch[i] #find the hatch time of this worm
+                escape=CSV_annotation.Escape[i] #finds the escape time of this worm
                 
                 #Access the GFP quantification values from the hatching time until the time the worm escapes from the valid worms, defined before
                 index=np.where((CSV_quantification.Position==position) & (CSV_quantification.Frame >= hatch) & (CSV_quantification.Frame < escape)) #find the indices of this specific worm that has timepoints in between hatch and end
