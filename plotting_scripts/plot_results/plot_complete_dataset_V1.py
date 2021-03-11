@@ -80,7 +80,7 @@ plt.legend()
 plt.xlabel('Time of larval development (h)')
 plt.ylabel('GFP intensity (a.u.)')
 plt.grid()
-
+plt.show()
 
 
 #plot with dataframe!!!   
@@ -88,7 +88,8 @@ plt.figure(2)
 sns.set_theme(style="darkgrid")
 df=pd.DataFrame({'time after hatch (h)':listtime, 'GFP intensity (a.u.)':listGFP,'condition':listcondition}) 
 sns.lineplot(x='time after hatch (h)',y='GFP intensity (a.u.)',hue='condition',data=df, palette=colors).set_title('GFP intensity over time')
-  
+plt.show()
+
  
 
 
