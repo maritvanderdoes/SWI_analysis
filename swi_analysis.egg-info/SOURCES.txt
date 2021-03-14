@@ -1,0 +1,12 @@
+README.md
+setup.py
+swi_analysis.egg-info/PKG-INFO
+swi_analysis.egg-info/SOURCES.txt
+swi_analysis.egg-info/dependency_links.txt
+swi_analysis.egg-info/requires.txt
+swi_analysis.egg-info/top_level.txt
+tasks/Lucas_Segmentation_Test.py
+tasks/__init__.py
+tasks/marit_functions.py
+tasks/swi_analysis_mCherry.py
+tasks/swi_analysis_mCherry_Lucas.py
