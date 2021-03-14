@@ -12,8 +12,7 @@ import re
 from skimage import io
 from scipy.ndimage.measurements import label 
 from skimage.measure import regionprops
-
-
+#import cv2
 
 
 #-----------------------------------------------------------------------------
@@ -48,17 +47,17 @@ def dataset_comparison(ground_truth, noisy_input, output_image):
         # Ground truth
         axs[0,0].imshow(noisy_input[int(np.round(noisy_input.shape[0]/2)),:,:])   
         axs[0,0].set_title('Noisy input') 
-        axs[1,0].imshow(noisy_input[:,:,int(np.round(noisy_input.shape[2]/2))])   
+        axs[1,0].imshow(noisy_input[:,int(np.round(noisy_input.shape[2]/2)),:])   
 
         # Noisy input
         axs[0,1].imshow(ground_truth[int(np.round(ground_truth.shape[0]/2)),:,:])      
         axs[0,1].set_title('Ground truth') 
-        axs[1,1].imshow(ground_truth[:,:,int(np.round(ground_truth.shape[2]/2))])  
+        axs[1,1].imshow(ground_truth[:,int(np.round(ground_truth.shape[1]/2)),:])  
 
         # Masked
         axs[0,2].imshow(output_image[int(np.round(output_image.shape[0]/2)),:,:])      
         axs[0,2].set_title('Masked Data') 
-        axs[1,2].imshow(output_image[:,:,int(np.round(output_image.shape[2]/2))])  
+        axs[1,2].imshow(output_image[:,int(np.round(output_image.shape[2]/2)),:])  
 
         # Summary
         print('Non-matching pixels = '+str(np.sum(np.abs(THPX-mask_data))))
@@ -68,6 +67,28 @@ def dataset_comparison(ground_truth, noisy_input, output_image):
 
 # Adaptive masking
 def adaptive_masking(input_image, mm_th, th_sel):
+    """
+    adaptive_masking is a function that takes a 3D image (z,x,y) and it proceeds
+    to mask it using an adaptive threshold for each pixel.
+
+    This function should replace img_thresholding and select_zslides functions 
+    from the Marit package.
+
+    Parameters
+    ----------
+    input_image : 3D image of the worm
+        should be a image on which the signal needs to be thresholded.
+
+    mm_th: the absolute threshold
+
+    th_sel: the adaptive threshold
+        
+    Returns
+    -------
+    THPX : 3D binary image of the worm
+        is a mask of the image in binary.
+
+    """
     # Retrieving dimensions
     datdim = input_image.shape
 

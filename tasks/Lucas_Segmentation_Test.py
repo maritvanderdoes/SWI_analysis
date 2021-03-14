@@ -8,6 +8,9 @@ from marit_functions import calculate_worm_properties
 from marit_functions import get_meta_info_temp
 
 from lucas_functions import generating_ball
+from lucas_functions import adaptive_masking
+from lucas_functions import dataset_comparison
+from lucas_functions import masking_summary
 
 #%% additional imports for coding
 import matplotlib.pyplot as plt
@@ -67,7 +70,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         sz, sx, sy = (0, .1, -.1)
         # Threshold level
         th_level = .5
-        # Background levle
+        # Background level
         b_level = 10
         # Noise level
         n_level = 1e-1
