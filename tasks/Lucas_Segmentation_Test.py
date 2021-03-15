@@ -7,8 +7,10 @@ from marit_functions import select_zslides
 from marit_functions import calculate_worm_properties
 from marit_functions import get_meta_info_temp
 
+import skimage.morphology as skimorph
 from lucas_functions import generating_ball
 from lucas_functions import adaptive_masking
+from lucas_functions import mask_postprocessing
 from lucas_functions import dataset_comparison
 from lucas_functions import masking_summary
 
@@ -81,25 +83,24 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         # Min/Max threshold
         mm_th = 1.05
         # Threshold_selection
-        th_sel = .4
+        th_sel = .5
 
         # Running the function
-        THPH, SORTED, ADPT, PRETH = adaptive_masking(test_data, mm_th, th_sel)
+        THPX, SORTED, ADPT, PRETH = adaptive_masking(test_data, mm_th, th_sel)
 
-        # 4. Refining
+        # Mask post-processing
+        # Kernel
+        krn = skimorph.disk(1)
+        # Removing holes
+        area_th = 64
+        THPX = mask_postprocessing(THPX, krn, area_th)
 
         # Comparison of synthetic datasets
-        dataset_comparison(mask_data, test_data, THPH)
+        dataset_comparison(mask_data, test_data, THPX)
 
         # Presenting outputs
-        masking_summary(PRETH, ADPT, mm_th)
+        masking_summary(PRETH, SORTED, ADPT, mm_th)
 
-        # 4. Additional thresholding
-        # krn = strel('disk',5);
-        # for pl = 1:28
-        #     THPX(:,:,pl) = imdilate(imerode(THPX(:,:,pl),krn,'same'),krn,'same');
-        #     THPX(:,:,pl) = imfill(THPX(:,:,pl),'holes');
-        # end
 
         # #preprocessing and thresholding to make image binary
         # img_binary = img_thresholding(img_mcherry)

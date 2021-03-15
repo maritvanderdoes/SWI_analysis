@@ -12,7 +12,9 @@ import re
 from skimage import io
 from scipy.ndimage.measurements import label 
 from skimage.measure import regionprops
-#import cv2
+import scipy.ndimage.morphology as scimorph
+import skimage.morphology as skimorph
+
 
 
 #-----------------------------------------------------------------------------
@@ -47,17 +49,24 @@ def dataset_comparison(ground_truth, noisy_input, output_image):
         # Ground truth
         axs[0,0].imshow(noisy_input[int(np.round(noisy_input.shape[0]/2)),:,:])   
         axs[0,0].set_title('Noisy input') 
-        axs[1,0].imshow(noisy_input[:,int(np.round(noisy_input.shape[2]/2)),:])   
+        axs[1,0].imshow(noisy_input[:,int(np.round(noisy_input.shape[2]/2)),:],aspect = 'auto')   
 
         # Noisy input
         axs[0,1].imshow(ground_truth[int(np.round(ground_truth.shape[0]/2)),:,:])      
         axs[0,1].set_title('Ground truth') 
-        axs[1,1].imshow(ground_truth[:,int(np.round(ground_truth.shape[1]/2)),:])  
+        axs[1,1].imshow(ground_truth[:,int(np.round(ground_truth.shape[1]/2)),:],aspect = 'auto')  
 
         # Masked
         axs[0,2].imshow(output_image[int(np.round(output_image.shape[0]/2)),:,:])      
         axs[0,2].set_title('Masked Data') 
-        axs[1,2].imshow(output_image[:,int(np.round(output_image.shape[2]/2)),:])  
+        axs[1,2].imshow(output_image[:,int(np.round(output_image.shape[2]/2)),:],aspect = 'auto')  
+        
+        # Comparison
+        fig, axs = plt.subplots(2, 1, sharex = True)
+        comparison = np.abs(output_image-ground_truth)
+        axs[0].imshow(np.sum(comparison[:,:,:],axis = 0))      
+        axs[0].set_title('Projected Difference') 
+        axs[1].imshow(np.sum(comparison[:,:,:],axis = 2),aspect = 'auto')      
 
         # Summary
         print('Non-matching pixels = '+str(np.sum(np.abs(THPX-mask_data))))
@@ -124,17 +133,28 @@ def adaptive_masking(input_image, mm_th, th_sel):
     # 3. Thresholding
     for px in np.arange(0,np.sum(MTH)):
         for z_plane in np.arange(0,datdim[0]):
-            #ADPT[px] = th_sel*MINSORTED[px]*TH[px]
-            ADPT[px] = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
+            #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
+            adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
+            ADPT[px] = adpt
             THPX[z_plane,int(SORTED[z_plane,px,2]),int(SORTED[z_plane,px,1])] = \
-                SORTED[z_plane,px,0]>ADPT[z_plane]
-
-    # 4. Refining
+                SORTED[z_plane,px,0]>adpt
 
     return THPX, SORTED, ADPT, PRETH
 
+# Mask post-processing
+def mask_postprocessing(input_mask, krn, area_th):
+    for z_plane in np.arange(0,input_mask.shape[0]):
+        # Erosion
+        input_mask[0,:,:] = skimorph.binary_erosion(input_mask[0,:,:], krn)
+        # Dilation
+        input_mask[0,:,:] = skimorph.binary_dilation(input_mask[0,:,:], krn)
+        # Filling holes
+        input_mask[0,:,:] = skimorph.area_closing(input_mask[0,:,:], area_th)
+
+    return input_mask
+
 # Summary masking
-def masking_summary(PRETH, ADPT, mm_th):
+def masking_summary(PRETH, SORTED, ADPT, mm_th):
     # Ordered pixels
     fig, axs = plt.subplots(2, 1, sharex = True)   
     axs[0].plot(PRETH,'r')
@@ -146,6 +166,12 @@ def masking_summary(PRETH, ADPT, mm_th):
     axs[1].plot(ADPT,'r')
     axs[1].set_xlabel('Pixel index')
     axs[1].set_ylabel('Threshold value')
+
+    # SORTED distribution
+    plt.figure()
+    plt.imshow(SORTED[:,:,0],aspect='auto')
+    plt.xlabel('Pixel index')
+    plt.ylabel('Z-plane')
 
     # Examples
     fig, axs = plt.subplots(1,3)
