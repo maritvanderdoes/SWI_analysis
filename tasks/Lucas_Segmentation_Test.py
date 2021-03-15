@@ -64,6 +64,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
 
         img_mcherry = read_image(file1)
         img_gfp = read_image(file2)
+        print(img_mcherry.shape)
 
         # 0. Loading random data of same dimensions
         # Dimensions
@@ -91,9 +92,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         # Mask post-processing
         # Kernel
         krn = skimorph.disk(1)
-        # Removing holes
-        area_th = 64
-        THPX = mask_postprocessing(THPX, krn, area_th)
+        THPX = mask_postprocessing(THPX, krn)
 
         # Comparison of synthetic datasets
         dataset_comparison(mask_data, test_data, THPX)

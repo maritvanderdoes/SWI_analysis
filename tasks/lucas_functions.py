@@ -142,14 +142,14 @@ def adaptive_masking(input_image, mm_th, th_sel):
     return THPX, SORTED, ADPT, PRETH
 
 # Mask post-processing
-def mask_postprocessing(input_mask, krn, area_th):
+def mask_postprocessing(input_mask, krn):
     for z_plane in np.arange(0,input_mask.shape[0]):
         # Erosion
         input_mask[0,:,:] = skimorph.binary_erosion(input_mask[0,:,:], krn)
         # Dilation
         input_mask[0,:,:] = skimorph.binary_dilation(input_mask[0,:,:], krn)
         # Filling holes
-        input_mask[0,:,:] = skimorph.area_closing(input_mask[0,:,:], area_th)
+        input_mask[0,:,:] = scimorph.fill_holes(input_mask[0,:,:])
 
     return input_mask
 
