@@ -13,6 +13,9 @@ from lucas_functions import adaptive_masking
 from lucas_functions import mask_postprocessing
 from lucas_functions import dataset_comparison
 from lucas_functions import masking_summary
+# import lucas_functions
+
+reload(lucas_functions)
 
 #%% additional imports for coding
 import matplotlib.pyplot as plt

@@ -7,6 +7,7 @@ swi_analysis.egg-info/requires.txt
 swi_analysis.egg-info/top_level.txt
 tasks/Lucas_Segmentation_Test.py
 tasks/__init__.py
+tasks/lucas_functions.py
 tasks/marit_functions.py
 tasks/swi_analysis_mCherry.py
 tasks/swi_analysis_mCherry_Lucas.py

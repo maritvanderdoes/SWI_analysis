@@ -1,3 +1,7 @@
 {
-    "python.pythonPath": "C:\\Users\\moraluca\\AppData\\Local\\Continuum\\anaconda3\\envs\\SWI\\python.exe"
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+    "terminal.integrated.inheritEnv": false,
+    "python.condaPath": "C:\\Users\\moraluca\\AppData\\Local\\Continuum\\anaconda3\\Scripts\\conda.exe",
+    "python.pythonPath": "C:\\Users\\moraluca\\.conda\\envs\\SWI\\python.exe",
 }

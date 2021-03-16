@@ -69,7 +69,7 @@ def dataset_comparison(ground_truth, noisy_input, output_image):
         axs[1].imshow(np.sum(comparison[:,:,:],axis = 2),aspect = 'auto')      
 
         # Summary
-        print('Non-matching pixels = '+str(np.sum(np.abs(THPX-mask_data))))
+        print('Non-matching pixels = '+str(np.sum(np.abs(output_image-ground_truth))))
 
 #-----------------------------------------------------------------------------
 # Masking
@@ -149,7 +149,7 @@ def mask_postprocessing(input_mask, krn):
         # Dilation
         input_mask[0,:,:] = skimorph.binary_dilation(input_mask[0,:,:], krn)
         # Filling holes
-        input_mask[0,:,:] = scimorph.fill_holes(input_mask[0,:,:])
+        input_mask[0,:,:] = scimorph.binary_fill_holes(input_mask[0,:,:])
 
     return input_mask
 
