@@ -19,6 +19,7 @@ setup(
         'scipy>=1.5',
         'seaborn>=0.11',
         'pandas>=1.1',
-        'luigi>=3.0'
+        'luigi>=3.0',
+        'fil_finder'
     ],
 )
