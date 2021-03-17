@@ -1,0 +1,7 @@
+# Lucas' datasets
+dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
+outputpath = 'C:/Users/moraluca/Desktop/Lin28_test\Output'
+
+# Marit's datasets
+dirpath = ''
+outputpath = ''
