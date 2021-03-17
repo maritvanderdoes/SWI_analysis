@@ -9,7 +9,6 @@ from utils import select_zslides
 from utils import calculate_worm_properties
 from utils import get_meta_info_temp
 from utils import adaptive_masking
-from utils import mask_postprocessing
 
 from utils.synthdata import generating_ball
 
@@ -18,7 +17,6 @@ from utils.plotting import masking_summary
 
 # Import additional libraries
 import pandas as pd
-import skimage.morphology as skimorph
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -28,6 +26,16 @@ dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
 outputpath = 'C:/Users/moraluca/Desktop/Lin28_test/Output'
 channel_GFP =   'w1Lucas-sim-488-561'
 channel_mcherry= 'w2Lucas-sim-561-488'
+
+
+# Numerical Parameters
+# Min/Max threshold
+mm_th = 1.8
+# Threshold_selection
+th_sel = .5
+# Kernel
+krn_size = 1
+krn_type = 'Disk'
 
 #save retults
 results = []
@@ -41,14 +49,6 @@ print(list_mcherry)
 
 #%%
 
-# Parameters
-# Min/Max threshold
-mm_th = 1.8
-# Threshold_selection
-th_sel = .5
-# Kernel
-krn = skimorph.disk(1)
-
 #open mcherry and segment on signal
 for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
     print (i)
@@ -59,20 +59,17 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         print(img_mcherry.shape)
 
         # Running the function
-        THPX, SORTED, ADPT, PRETH = adaptive_masking(img_mcherry, mm_th, th_sel)
-
-        # Mask post-processing
-        THPX = mask_postprocessing(THPX, krn)
+        output_mask, SORTED, ADPT, PRETH = adaptive_masking(img_mcherry, mm_th, th_sel, krn_size, krn_type)
 
         # Presenting outputs
         masking_summary(PRETH, SORTED, ADPT, mm_th)
 
         # Plott result
         plt.figure()
-        plt.imshow(THPX[10,:,:])
+        plt.imshow(output_mask[10,:,:])
 
         plt.figure()
-        plt.plot(np.sum(np.sum(THPX,axis=2),axis = 1))
+        plt.plot(np.sum(np.sum(output_mask,axis=2),axis = 1))
 
 
         # #preprocessing and thresholding to make image binary

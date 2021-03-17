@@ -16,7 +16,6 @@ from utils.core_utils import calculate_worm_properties
 
 # Masking
 from utils.core_utils import adaptive_masking
-from utils.core_utils import mask_postprocessing
 
 # Depecreted
 from utils.deprecated import select_zslides

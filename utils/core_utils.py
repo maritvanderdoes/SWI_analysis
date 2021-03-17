@@ -159,7 +159,7 @@ def calculate_worm_properties(img_binary,img_signal):
 # Masking
 
 # Adaptive masking
-def adaptive_masking(input_image, mm_th, th_sel):
+def adaptive_masking(input_image, mm_th, th_sel, krn_size, krn_type):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it proceeds
     to mask it using an adaptive threshold for each pixel.
@@ -188,7 +188,7 @@ def adaptive_masking(input_image, mm_th, th_sel):
     # Storing matrices
     SORTED = np.zeros([datdim[0],datdim[1]*datdim[2],3])
     IMGSEL = np.zeros([datdim[1]*datdim[2],3])
-    THPX = np.zeros([datdim[0],datdim[1],datdim[2]])  
+    output_mask = np.zeros([datdim[0],datdim[1],datdim[2]])  
     ADPT = np.zeros([datdim[1]*datdim[2]])
 
     # Generating matrix coordinates
@@ -220,19 +220,23 @@ def adaptive_masking(input_image, mm_th, th_sel):
             #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
             adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
             ADPT[px] = adpt
-            THPX[z_plane,int(SORTED[z_plane,px,2]),int(SORTED[z_plane,px,1])] = \
+            output_mask[z_plane,int(SORTED[z_plane,px,2]),int(SORTED[z_plane,px,1])] = \
                 SORTED[z_plane,px,0]>adpt
 
-    return THPX, SORTED, ADPT, PRETH
+    # 4. Further posprocessings
+    if krn_size>1 :
+        # Kernel selection
+        if krn_type == 'Disk':
+            krn = skimorph.disk(krn_size)
+        elif krn_type == 'Square':
+            krn = skimorph.square(krn_size)
 
-# Mask post-processing
-def mask_postprocessing(input_mask, krn):
-    for z_plane in np.arange(0,input_mask.shape[0]):
-        # Erosion
-        input_mask[0,:,:] = skimorph.binary_erosion(input_mask[0,:,:], krn)
-        # Dilation
-        input_mask[0,:,:] = skimorph.binary_dilation(input_mask[0,:,:], krn)
-        # Filling holes
-        input_mask[0,:,:] = scimorph.binary_fill_holes(input_mask[0,:,:])
+        for z_plane in np.arange(0,output_mask.shape[0]):
+            # Erosion
+            output_mask[0,:,:] = skimorph.binary_erosion(output_mask[0,:,:], krn)
+            # Dilation
+            output_mask[0,:,:] = skimorph.binary_dilation(output_mask[0,:,:], krn)
+            # Filling holes
+            output_mask[0,:,:] = scimorph.binary_fill_holes(output_mask[0,:,:])
 
-    return input_mask
+    return output_mask, SORTED, ADPT, PRETH
