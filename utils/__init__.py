@@ -12,6 +12,7 @@ from utils.core_utils import calculate_worm_properties
 
 # Masking
 from utils.core_utils import adaptive_masking
+from utils.core_utils import mask_postprocessing
 from utils.core_utils import mask_refinement
 
 # Benchmarking

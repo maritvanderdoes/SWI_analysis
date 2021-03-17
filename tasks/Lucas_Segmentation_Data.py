@@ -1,27 +1,26 @@
-#%% importing
-
+#%% Setting up
+# Loading utils package
 import _setup
-
-from utils import image_lists
-from utils import read_image_and_metadata
-from utils import adaptive_masking
-from utils import calculate_worm_properties
-
-
-from utils.plotting import dataset_comparison
-from utils.plotting import masking_summary
-from utils.plotting import plotzslides
-
-
-from utils import tic, toc, downscaling
+# Loading tools
+from utils import image_lists, read_image_and_metadata
+# Computing tools
+from utils import adaptive_masking, calculate_worm_properties
+# Plotting tools
+from utils.plotting import dataset_comparison, masking_summary, plotzslides
+# Benchmarking
+from utils import downscaling
 
 # Import additional libraries
-import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-#%% load parameters
-from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry, data_format
+# load parameters
+from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
+from _parameters import data_format, verbosity
+
+# Other coding parameters
+dwnscl = False
+plttng = False
 
 # Parameters in change
 krn_size = 5
@@ -31,34 +30,34 @@ exp_size = 5
 results = []
 image = 0
 
-#%% to run
-
-# list for all channels the stk files in folder
+#%% list for all channels the stk files in folder
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
 print(list_mcherry)
 
 #%%
 
 #open mcherry and segment on signal
-for i,files in enumerate(zip(list_mcherry, list_GFP)):
-    print ('Sample selected: '+str(i))
-    if (i==image):
+for k,files in enumerate(zip(list_mcherry, list_GFP)):
+    print ('Sample selected: '+str(k))
+    if (k==image):
         # Reading the image and metadata
         (img_mcherry, img_gfp), meta_out = \
             read_image_and_metadata(files, data_format = data_format)
 
         # Downscaling (for testing purposes)
-        (img_mcherry, img_gfp) = \
-            downscaling((img_mcherry, img_gfp), verbose = True)
+        if dwnscl:
+            (img_mcherry, img_gfp) = \
+                downscaling((img_mcherry, img_gfp), verbose = verbosity)
 
         # Running the masking
         binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
             adaptive_masking(img_mcherry, krn_size = krn_size, exp_size = exp_size, 
-            z_threshold = 0.2, verbose = True)
+            verbose = verbosity)
 
         # Presenting outputs
-        #masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane)
-        #plotzslides('Comparison',[10,11,15,18,19],img_mcherry,binary_mask,img_gfp)
+        if plttng:
+            masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane)
+            plotzslides('Comparison',[10,11,15,18,19],img_mcherry,binary_mask,img_gfp)
 
         # Calculating properties of the segmented worm
         binary_image, area, mean_intensity, min_intensity = calculate_worm_properties(
@@ -80,6 +79,3 @@ for i,files in enumerate(zip(list_mcherry, list_GFP)):
         break
  # %%
 
-# %%
-
-# %%

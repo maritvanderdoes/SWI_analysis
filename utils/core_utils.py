@@ -19,6 +19,38 @@ import skimage.morphology as skimorph
 # Loading Datasets
 
 def read_image_and_metadata(path, data_format = 'st'):
+    '''
+    Reads a STK or TIFF file for a path (include filename) and return
+    the (3D) image and the values for position and frame.
+    
+    This function allows for more than on path name to be read. This 
+    allows for all channels to be read simultaneously. Following Marit's 
+    convention for ordering. For instance:
+    (mCherry_img, GFP_img, BF_imag), metadata_out = 
+        read_image_and_metadata(mCherry_path, GFP_path, BF_path)
+
+    Filenames are assume to be of the form:
+        name_sx_tx_otherinfo.extension
+    Other filenames would not yield correct results.
+
+    Version note: This function replaces read_image, get_meta_info 
+    and get_meta_info_temp from the Marit module.
+
+    Parameters
+    ----------
+    path : Path of the file(s) to read.
+    data_format: Declaring the filename structure. By default it is 
+        assumed for time to preceed position ('st' format). 
+        If position preceeds time, then define data_format = 'ts'.
+
+    Returns
+    -------
+    img_output: (3D) array(s) of the selected image(s). For more than
+        one image, each array is contained in a tuple.
+    metadata_out: Dictionary containing the position (s) and the 
+        frame (t).
+
+    '''
     # Image
     if np.ndim(path) == 0:
         img = io.imread(path)
@@ -50,28 +82,36 @@ def read_image_and_metadata(path, data_format = 'st'):
             s_info = 2
             t_info = 1
 
-    dict_out = {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
+    metadata_out = {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
 
-    return img_output, dict_out
+    return img_output, metadata_out
 
 #-----------------------------------------------------------------------------
 # read files from folder
-def image_lists(directory,channel1,channel2 = None,channel3 = None):
+def image_lists(directory, channel1, channel2 = None, channel3 = None):
     """
-    lists mcherry images in dir1/channel1 and corresponding GFP and BF images in channel2 and 3 
+    List images for different channels of the same image. Images are
+    assumed to be in the same directory. Marit's convention tend to 
+    order channels as mCherry, GFP and BF (see parenthesis).
+
+    It can take a single channel and up to three.
+
+    Version note: This function replaces image_lists_BF_GFP,
+    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
+    Marit module.
 
     Parameters
     ----------
     dir1 : directory where all images are located
-    channel1 : name of channel1 images(mcherry)
-    channel2 : name of channel2 images(GFP)
-    channel3 : name of channel2 images(BF)
+    channel1 : name of channel1 images (mcherry)
+    channel2 : name of channel2 images (GFP)
+    channel3 : name of channel3 images (BF)
 
     Returns
     -------
-    list_1 : list of files in mcherry
-    list_2 : list of files in GFP
-    list_3 : list of files in BF
+    list_1 : list of files with the channel1 (mCherry)
+    list_2 : list of files with the channel2 (GFP)
+    list_3 : list of files with the channel3 (BF)
 
     """
     list_set = []
@@ -90,7 +130,7 @@ def image_lists(directory,channel1,channel2 = None,channel3 = None):
 
 #-----------------------------------------------------------------------------
 # Calculating worm properties
-def calculate_worm_properties(img_binary,img_signal):
+def calculate_worm_properties(img_binary, img_signal):
     '''
     worm_proprties_output is a function that  calculates different properties 
     (area, mean_intensity, min_intensity) of the signal images, based on the 
@@ -128,25 +168,65 @@ def calculate_worm_properties(img_binary,img_signal):
 # Adaptive masking
 def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_type = 'Disk', exp_size = 1, z_threshold = 0.2, verbose = False):
     """
-    adaptive_masking is a function that takes a 3D image (z,x,y) and it proceeds
-    to mask it using an adaptive threshold for each pixel.
+    adaptive_masking is a function that takes a 3D image (z,x,y) and it 
+    proceeds to mask it using an adaptive threshold for each pixel.
 
-    This function should replace img_thresholding and select_zslides functions 
-    from the Marit package.
+    After masking, the image is then processed to:
+        - Remove noisy pixels by eroding and then dilating.
+        - Filling holes.
+        - Bridging gaps by dilating and then eroding.
+        - Removing z planes that do present areas below a threshold.
+
+    Version note: This function replaces img_thresholding and 
+    select_zslides functions from the Marit module.
 
     Parameters
     ----------
     input_image : 3D image of the worm
         should be a image on which the signal needs to be thresholded.
 
-    mm_th: the absolute threshold
+    mm_th: absolute threshold to determine background for all the z 
+        planes. By default it is 1.8. However, for certain synthetic data
+        it is better to define it as 1.05.
 
-    th_sel: the adaptive threshold
+    th_sel: adaptive threshold to determine which z planes present signal.
+        It has a default value of 0.4.
+
+    krn_type: type of kernel. By default a disk kernel is used.
+
+    krn_size: kernel size for the removal of noisy pixels. Default value 
+        of 1 implies this step is not performed.
+
+    exp_size: kernel size for bridging disconnected parts and smoothing 
+        the shape. Default value of 1 implies this step is not performed.
+
+    z_threshold:  threshold for the removal of spurious regions in certain
+        z planes. Default value of 0.2 eliminates z planes with abnormal
+        areas below size z_threshold*max(area_zplane).
+    
+    verbose: Output progression through steps and time taken. By default
+        it is off.
         
     Returns
     -------
-    THPX : 3D binary image of the worm
-        is a mask of the image in binary.
+    output_mask: (3D) matrix representing the binary mask using the given
+        input_image
+
+    sorted_values: sorted intensity values for the input_image in descending
+        order. It has dimensions of [zplanes, number_of_pixels,3]. 
+        The third dimension contains:
+        - [0] Intensity value
+        - [1] X coordinate
+        - [2] Y coordinate
+
+    pixel_threshold: threshold value for each pixel in sorted_values. It
+        has dimensions of [number_of_pixels] (ordered).
+
+    pixel_range: ratio between the highest intensity value and the lowest
+        intensity value for each pixel along the z axis. It has dimensions
+        of [number_of_pixels] (ordered).
+
+    area_zplane: area of the mask for each z plane.
 
     """
     # Debugging and benchmarking
@@ -236,6 +316,29 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_t
 
 # Supporting functions for masking
 def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
+"""
+    Processes a binary mask to:
+        - Remove noisy pixels by eroding and then dilating.
+        - Filling holes.
+        - Bridging gaps by dilating and then eroding.
+
+    Parameters
+    ----------
+    input_mask : 3D binary mask of the worm.
+
+    krn_type: type of kernel. By default a disk kernel is used.
+
+    krn_size: kernel size for the removal of noisy pixels. Default value 
+        of 1 implies this step is not performed.
+
+    exp_size: kernel size for bridging disconnected parts and smoothing 
+        the shape. Default value of 1 implies this step is not performed.
+        
+    Returns
+    -------
+    input_maks: Processed mask.
+
+    """
     if krn_size>1 :
         # Kernel selection
         if krn_type == 'Disk':
@@ -269,6 +372,25 @@ def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 
     return input_mask
 
 def mask_refinement(input_mask, z_threshold = 0.2):
+    """
+    Processes a binary mask to:
+        - Removing z planes that do present areas below a threshold.
+
+    Parameters
+    ----------
+    input_mask : 3D binary mask of the worm.
+
+    z_threshold:  threshold for the removal of spurious regions in certain
+        z planes. Default value of 0.2 eliminates z planes with abnormal
+        areas below size z_threshold*max(area_zplane).
+        
+    Returns
+    -------
+    output_mask: Processed (3D) mask.
+
+    area_zplane: area of the mask for each z plane.
+
+    """
     # Obtaining the number of pixels
     area_zplane = np.sum(np.sum(input_mask,axis=2),axis = 1)
 
