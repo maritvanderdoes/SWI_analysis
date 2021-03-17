@@ -6,5 +6,5 @@ def tic():
 
 def toc(start):
     stop = timeit.default_timer()
-    print('Time elapsed of ' +"{:.1f}".format((stop - start))+' seconds')
+    print('Time elapsed of ' +"{:.2f}".format((stop - start))+' seconds')
     return stop

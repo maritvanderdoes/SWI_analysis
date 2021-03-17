@@ -18,26 +18,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 #%% load parameters
-dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
-outputpath = 'C:/Users/moraluca/Desktop/Lin28_test/Output'
-channel_GFP =   'w1Lucas-sim-488-561'
-channel_mcherry= 'w2Lucas-sim-561-488'
-
-
-# Numerical Parameters
-# Min/Max threshold
-mm_th = 1.8
-# Threshold_selection
-th_sel = .5
-# Kernel
-krn_size = 1
-krn_type = 'Disk'
+from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
+from _parameters import mm_th, th_sel, krn_size, krn_type
 
 #save retults
 results = []
-image=1
+image = 0
 
 #%% to run
 
@@ -64,7 +51,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
 
         # Plott result
         plt.figure()
-        plt.imshow(output_mask[10,:,:])
+        plt.imshow(output_mask[14,:,:])
 
         plt.figure()
         plt.plot(np.sum(np.sum(output_mask,axis=2),axis = 1))
@@ -95,3 +82,11 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
 
         break
  # %%
+        # Plott result
+        plt.figure()
+        plt.imshow(output_mask[17,:,:])
+
+        plt.figure()
+        plt.plot(np.sum(np.sum(output_mask,axis=2),axis = 1))
+        plt.grid()
+# %%

@@ -9,7 +9,6 @@ from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 #import cv2
 from fil_finder import FilFinder2D
 import astropy.units as u
-import timeit
 
 from utils import image_lists_mcherry_GFP
 from utils import read_image
@@ -19,8 +18,7 @@ from utils import calculate_worm_properties
 from utils import get_meta_info_temp
 from skimage.morphology import skeletonize, skeletonize_3d
 
-from utils import tic
-from utils import toc
+from utils import tic, toc
 
 #%% load parameters
 dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
@@ -51,9 +49,12 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         #find and plot skeleton
         start = tic()
         skeleton = skeletonize(image)
-        skeleton3d = skeletonize_3d(img_binary)
 
         toc(start)
+
+        skeleton3d = skeletonize_3d(img_binary)
+
+        stop = toc(start)
         
         fig, axes = plt.subplots(1, 3, figsize=(8, 4), sharex=True, sharey=True)
         ax = axes.ravel()
@@ -90,7 +91,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         plt.show()
  
 
-        toc(start)
+        stop = toc(start)
         
 
 
