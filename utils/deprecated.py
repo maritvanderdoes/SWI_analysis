@@ -15,6 +15,129 @@ from skimage.measure import regionprops
 import scipy.ndimage.morphology as scimorph
 import skimage.morphology as skimorph
 
+#-----------------------------------------------------------------------------
+# Loading Datasets
+
+def get_meta_info(path, data_format = 'st'):
+    if data_format == 'st':
+        pictureinfo = re.split('_s(\d+)_t(\d+)\..+', path)
+        s_info = 0
+        t_info = 1
+    if data_format == 'ts':
+        pictureinfo = re.split('t(\d+)_s(\d+)_', path)
+        s_info = 1
+        t_info = 0
+
+    return {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
+
+
+def get_meta_info_temp(path):
+    pictureinfo = re.split('t(\d+)_s(\d+)_', path)
+    return {'Position': pictureinfo[2], 'Frame': pictureinfo[1]}
+
+    
+def read_image(path):
+    if np.ndim(path) == 0:
+        img = io.imread(path)
+        img_output = img.squeeze()
+    else:
+        img_output = []
+        for k in enumerate(path):
+            img = io.imread(path[k[0]])
+            img_output.append(img.squeeze())
+
+    return img_output
+
+#-----------------------------------------------------------------------------
+# read files from folder
+def image_lists_BF_GFP(dir1, channel1, dir2):
+    """
+    lists GFP images in dir1/channel1 and find corresponding GFP images in dir2
+
+    Parameters
+    ----------
+    dir1 : directory where the GFP images are located 
+    channel1 : name of channel1 images(GFP) 
+    dir2 : directory where segmented images are located
+
+    Returns
+    -------
+    list_1 : list of files in GFP 
+    list_2 : list of files in BF
+
+    """
+    #creating list1 with GFP images           
+    list_1=sorted(glob.glob(os.path.join(dir1, "*"+channel1+"*")))
+    
+    #checks if the channel pattern is present in the directory
+    if not list_1:
+        raise FileNotFoundError(
+         'No files in image_folder match the given image_file_pattern={}'
+         .format(channel1))
+                
+    #creating list2 with segmented images           
+    list_2=[]
+    for name in list_1:
+        match=re.split('(\S*_)(\S*)(_s\S*)', os.path.basename(name)) #space=[0],exp_name=[1],channelname=[2],wrom&tp=[3]
+        #finds the matched image pairs for exp_name and worm&tp in dir2
+        matching_BF=glob.glob(os.path.join(dir2, match[1]+"*"+ match[3])) 
+        
+        #checks if the segmented image pair is present
+        if not matching_BF:
+            raise FileNotFoundError(
+                'the segmented pair was not found for ={}'
+                .format(name))
+        
+        #if image pair is present, first entry of the mathing file [0] is added to list2
+        list_2.append(matching_BF[0])
+    return list_1, list_2
+
+def image_lists_mcherry_GFP(directory, channel1,channel2):
+    """
+    lists mcherry images in dir1/channel1 and corresponding GFP images in dir2/channel2
+
+    Parameters
+    ----------
+    dir1 : directory where brightfield images are located
+    channel1 : name of channel1 images(BF)
+    dir2 : directory where GFP images are located
+    channel2 : name of channel2 images(GFP)
+
+    Returns
+    -------
+    list_1 : list of files in BF
+    list_2 : list of files in GFP
+
+    """
+    
+    list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
+    list_2=[name.replace(channel1, channel2) for name in list_1]     
+    return list_1, list_2
+
+def image_lists_mcherry_GFP_BF(directory, channel1,channel2,channel3):
+    """
+    lists mcherry images in dir1/channel1 and corresponding GFP and BF images in channel2 and 3 
+
+    Parameters
+    ----------
+    dir1 : directory where all images are located
+    channel1 : name of channel1 images(mcherry)
+    channel2 : name of channel2 images(GFP)
+    channel3 : name of channel2 images(BF)
+
+    Returns
+    -------
+    list_1 : list of files in mcherry
+    list_2 : list of files in GFP
+    list_3 : list of files in BF
+
+    """
+    
+    list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
+    list_2=[name.replace(channel1, channel2) for name in list_1]     
+    list_3= [name.replace(channel1, channel3) for name in list_1]  
+    return list_1, list_2, list_3
+
 #----------------------------------------------------------------------------
 # selecting good chambers and  slides in focus
 

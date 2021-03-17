@@ -18,86 +18,45 @@ import skimage.morphology as skimorph
 #-----------------------------------------------------------------------------
 # Loading Datasets
 
-def get_meta_info(path):
-    pictureinfo=re.split('_s(\d+)_t(\d+)\..+', path)
-    return {'Position': pictureinfo[1], 'Frame': pictureinfo[2]}
+def read_image_and_metadata(path, data_format = 'st'):
+    # Image
+    if np.ndim(path) == 0:
+        img = io.imread(path)
+        img_output = img.squeeze()
+        
+        # Metadata
+        if data_format == 'st':
+            pictureinfo = re.split('_s(\d+)_t(\d+)\..+', path)
+            s_info = 0
+            t_info = 1
+        if data_format == 'ts':
+            pictureinfo = re.split('t(\d+)_s(\d+)_', path)
+            s_info = 1
+            t_info = 0
 
-def get_meta_info_temp(path):
-    pictureinfo=re.split('t(\d+)_s(\d+)_', path)
-    return {'Position': pictureinfo[2], 'Frame': pictureinfo[1]}
+    else:
+        img_output = []
+        for k in enumerate(path):
+            img = io.imread(path[k[0]])
+            img_output.append(img.squeeze())
+        
+        # Metadata
+        if data_format == 'st':
+            pictureinfo = re.split('_s(\d+)_t(\d+)\..+', path[1])
+            s_info = 1
+            t_info = 2
+        if data_format == 'ts':
+            pictureinfo = re.split('t(\d+)_s(\d+)_', path[1])
+            s_info = 2
+            t_info = 1
 
-def read_image(path):
-    img = io.imread(path)
-    return img.squeeze()
+    dict_out = {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
+
+    return img_output, dict_out
 
 #-----------------------------------------------------------------------------
 # read files from folder
-
-def image_lists_BF_GFP(dir1, channel1, dir2):
-    """
-    lists GFP images in dir1/channel1 and find corresponding GFP images in dir2
-
-    Parameters
-    ----------
-    dir1 : directory where the GFP images are located 
-    channel1 : name of channel1 images(GFP) 
-    dir2 : directory where segmented images are located
-
-    Returns
-    -------
-    list_1 : list of files in GFP 
-    list_2 : list of files in BF
-
-    """
-    #creating list1 with GFP images           
-    list_1=sorted(glob.glob(os.path.join(dir1, "*"+channel1+"*")))
-    
-    #checks if the channel pattern is present in the directory
-    if not list_1:
-        raise FileNotFoundError(
-         'No files in image_folder match the given image_file_pattern={}'
-         .format(channel1))
-                
-    #creating list2 with segmented images           
-    list_2=[]
-    for name in list_1:
-        match=re.split('(\S*_)(\S*)(_s\S*)', os.path.basename(name)) #space=[0],exp_name=[1],channelname=[2],wrom&tp=[3]
-        #finds the matched image pairs for exp_name and worm&tp in dir2
-        matching_BF=glob.glob(os.path.join(dir2, match[1]+"*"+ match[3])) 
-        
-        #checks if the segmented image pair is present
-        if not matching_BF:
-            raise FileNotFoundError(
-                'the segmented pair was not found for ={}'
-                .format(name))
-        
-        #if image pair is present, first entry of the mathing file [0] is added to list2
-        list_2.append(matching_BF[0])
-    return list_1, list_2
-
-def image_lists_mcherry_GFP(directory, channel1,channel2):
-    """
-    lists mcherry images in dir1/channel1 and corresponding GFP images in dir2/channel2
-
-    Parameters
-    ----------
-    dir1 : directory where brightfield images are located
-    channel1 : name of channel1 images(BF)
-    dir2 : directory where GFP images are located
-    channel2 : name of channel2 images(GFP)
-
-    Returns
-    -------
-    list_1 : list of files in BF
-    list_2 : list of files in GFP
-
-    """
-    
-    list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
-    list_2=[name.replace(channel1, channel2) for name in list_1]     
-    return list_1, list_2
-
-def image_lists_mcherry_GFP_BF(directory, channel1,channel2,channel3):
+def image_lists(directory,channel1,channel2 = None,channel3 = None):
     """
     lists mcherry images in dir1/channel1 and corresponding GFP and BF images in channel2 and 3 
 
@@ -115,11 +74,19 @@ def image_lists_mcherry_GFP_BF(directory, channel1,channel2,channel3):
     list_3 : list of files in BF
 
     """
-    
+    list_set = []
     list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
-    list_2=[name.replace(channel1, channel2) for name in list_1]     
-    list_3= [name.replace(channel1, channel3) for name in list_1]  
-    return list_1, list_2, list_3
+    list_set.append(list_1)
+
+    if channel2 is not None:
+        list_2=[name.replace(channel1, channel2) for name in list_1] 
+        list_set.append(list_2)
+
+    if channel3 is not None:
+        list_3= [name.replace(channel1, channel3) for name in list_1] 
+        list_set.append(list_3)
+
+    return list_set
 
 #-----------------------------------------------------------------------------
 # Calculating worm properties
@@ -159,7 +126,7 @@ def calculate_worm_properties(img_binary,img_signal):
 # Masking
 
 # Adaptive masking
-def adaptive_masking(input_image, mm_th, th_sel, krn_size, krn_type):
+def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_type = 'Disk', exp_size = 1, z_threshold = 0.2, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it proceeds
     to mask it using an adaptive threshold for each pixel.
@@ -182,14 +149,20 @@ def adaptive_masking(input_image, mm_th, th_sel, krn_size, krn_type):
         is a mask of the image in binary.
 
     """
+    # Debugging and benchmarking
+    if verbose:
+        from utils.benchmarking import tic,toc
+        start0 = tic()
+        print('Adaptive masking. Verbose mode')
+
     # Retrieving dimensions
     datdim = input_image.shape
 
     # Storing matrices
-    SORTED = np.zeros([datdim[0],datdim[1]*datdim[2],3])
+    sorted_values = np.zeros([datdim[0],datdim[1]*datdim[2],3])
     IMGSEL = np.zeros([datdim[1]*datdim[2],3])
     output_mask = np.zeros([datdim[0],datdim[1],datdim[2]])  
-    ADPT = np.zeros([datdim[1]*datdim[2]])
+    pixel_threshold = np.zeros([datdim[1]*datdim[2]])
 
     # Generating matrix coordinates
     x = np.arange(0, datdim[1])
@@ -205,25 +178,64 @@ def adaptive_masking(input_image, mm_th, th_sel, krn_size, krn_type):
 
         # a = np.array([[1,4,4], [3,1,1], [1,5,2], [2,1,0]]) for test
         # srt = a[a[:,0].argsort()] for test
-        SORTED[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
+        sorted_values[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
+
+    # Debugging and benchmarking
+    if verbose:
+        from utils.benchmarking import tic,toc
+        print('Values sorted.', end = " ")
+        stop = toc(start0)
+        start = tic()
 
     # 2. Computing the thresholds
-    MAXSORTED = np.max(SORTED[:,:,0], axis=0)
-    MINSORTED = np.min(SORTED[:,:,0], axis=0)
-    PRETH = MAXSORTED/MINSORTED
-    MTH = PRETH > mm_th
-    TH = PRETH*MTH
+    MAXSORTED = np.max(sorted_values[:,:,0], axis=0)
+    MINSORTED = np.min(sorted_values[:,:,0], axis=0)
+    pixel_range = MAXSORTED/MINSORTED
+    MTH = pixel_range > mm_th
+    TH = pixel_range*MTH
 
     # 3. Thresholding
     for px in np.arange(0,np.sum(MTH)):
         for z_plane in np.arange(0,datdim[0]):
             #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
             adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
-            ADPT[px] = adpt
-            output_mask[z_plane,int(SORTED[z_plane,px,2]),int(SORTED[z_plane,px,1])] = \
-                SORTED[z_plane,px,0]>adpt
+            pixel_threshold[px] = adpt
+            output_mask[z_plane,int(sorted_values[z_plane,px,2]),int(sorted_values[z_plane,px,1])] = \
+                sorted_values[z_plane,px,0]>adpt
 
-    # 4. Further posprocessings
+    # Debugging and benchmarking
+    if verbose:
+        from utils.benchmarking import tic,toc
+        print('Pixels thresholded.', end = " ")
+        stop = toc(start)
+        start = tic()
+
+    # 4. Removing holes
+    output_mask = mask_postprocessing(output_mask, krn_size = krn_size, krn_type = krn_type, exp_size = exp_size)
+
+    # Debugging and benchmarking
+    if verbose:
+        from utils.benchmarking import tic,toc
+        print('XY postprocessing.', end = " ")
+        stop = toc(start)
+        start = tic()
+
+    # 5. Removing
+    output_mask, area_zplane = mask_refinement(output_mask, z_threshold = z_threshold)
+
+    # Debugging and benchmarking
+    if verbose:
+        from utils.benchmarking import tic,toc
+        print('Z postprocessing.', end = " ")
+        stop = toc(start)
+
+        print('Adaptive masking finished.', end = " ")
+        stop = toc(start0)
+
+    return output_mask, sorted_values, pixel_threshold, pixel_range, area_zplane
+
+# Supporting functions for masking
+def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
     if krn_size>1 :
         # Kernel selection
         if krn_type == 'Disk':
@@ -231,12 +243,42 @@ def adaptive_masking(input_image, mm_th, th_sel, krn_size, krn_type):
         elif krn_type == 'Square':
             krn = skimorph.square(krn_size)
 
-        for z_plane in np.arange(0,output_mask.shape[0]):
+        for z_plane in np.arange(0,input_mask.shape[0]):
             # Erosion
-            output_mask[0,:,:] = skimorph.binary_erosion(output_mask[0,:,:], krn)
+            input_mask[z_plane,:,:] = skimorph.binary_erosion(input_mask[z_plane,:,:], krn)
             # Dilation
-            output_mask[0,:,:] = skimorph.binary_dilation(output_mask[0,:,:], krn)
+            input_mask[z_plane,:,:] = skimorph.binary_dilation(input_mask[z_plane,:,:], krn)
             # Filling holes
-            output_mask[0,:,:] = scimorph.binary_fill_holes(output_mask[0,:,:])
+            input_mask[z_plane,:,:] = scimorph.binary_fill_holes(input_mask[z_plane,:,:])
 
-    return output_mask, SORTED, ADPT, PRETH
+            # Expanding the mask
+            
+    if exp_size>1:
+        # Kernel selection
+        if krn_type == 'Disk':
+            krn = skimorph.disk(exp_size)
+        elif krn_type == 'Square':
+            krn = skimorph.square(exp_size)
+
+        for z_plane in np.arange(0,input_mask.shape[0]):
+            # Dilation
+                input_mask[z_plane,:,:] = skimorph.binary_dilation(input_mask[z_plane,:,:], krn)
+            # Erosion
+                input_mask[z_plane,:,:] = skimorph.binary_erosion(input_mask[z_plane,:,:], krn)
+
+    return input_mask
+
+def mask_refinement(input_mask, z_threshold = 0.2):
+    # Obtaining the number of pixels
+    area_zplane = np.sum(np.sum(input_mask,axis=2),axis = 1)
+
+    # Find the maxima
+    max_pixels = np.max(area_zplane)
+
+    # Find which planes to keep
+    maintain_values = area_zplane > max_pixels*z_threshold
+
+    # Setting values to zero
+    output_mask = input_mask*maintain_values[:,None,None]
+
+    return output_mask, area_zplane

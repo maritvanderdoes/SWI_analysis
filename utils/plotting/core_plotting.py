@@ -66,45 +66,58 @@ def plotzslides(title,zslides,img1,img2,img3):
     plt.tight_layout()
 
 # Summary masking
-def masking_summary(PRETH, SORTED, ADPT, mm_th):
+def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm_th = 1.8, scale = 'log'):
     # Ordered pixels
     fig, axs = plt.subplots(2, 1, sharex = True)   
-    axs[0].plot(PRETH,'r')
-    axs[0].plot([0, PRETH.shape[0]],[mm_th, mm_th],'k:')
+    if scale == 'log':
+        axs[0].loglog(pixel_range,'r')
+        axs[0].loglog([0, pixel_range.shape[0]],[mm_th, mm_th],'k:')
+    elif scale == 'linear':
+        axs[0].plot(pixel_range,'r')
+        axs[0].plot([0, pixel_range.shape[0]],[mm_th, mm_th],'k:')
     axs[0].set_xlabel('Pixel index')
     axs[0].set_ylabel('Intensity range')
 
     # Treshold
-    axs[1].plot(ADPT,'r')
+    if scale == 'log':        
+        axs[1].loglog(pixel_threshold,'r')
+    elif scale == 'linear':
+        axs[1].plot(pixel_threshold,'r')
     axs[1].set_xlabel('Pixel index')
     axs[1].set_ylabel('Threshold value')
 
     # SORTED distribution
     plt.figure()
-    plt.imshow(SORTED[:,:,0],aspect='auto')
+    plt.imshow(sorted_values[:,:,0],aspect='auto')
     plt.xlabel('Pixel index')
     plt.ylabel('Z-plane')
 
     # Examples
     fig, axs = plt.subplots(1,3)
-    axs[0].plot(SORTED[:,0,0])
-    axs[0].plot([0, SORTED.shape[0]],[ADPT[0], ADPT[0]])
+    axs[0].plot(sorted_values[:,0,0])
+    axs[0].plot([0, sorted_values.shape[0]],[pixel_threshold[0], pixel_threshold[0]])
     axs[0].set_xlabel('Z plane')
     axs[0].set_title('Highest pixel')
 
-    midpx = np.sum(PRETH>mm_th)-1
-    axs[1].plot(SORTED[:,midpx,0])
-    axs[1].plot([0, SORTED.shape[0]],[ADPT[midpx], ADPT[midpx]])
+    midpx = np.sum(pixel_range>mm_th)-1
+    axs[1].plot(sorted_values[:,midpx,0])
+    axs[1].plot([0, sorted_values.shape[0]],[pixel_threshold[midpx], pixel_threshold[midpx]])
     axs[1].set_xlabel('Z plane')
     axs[1].set_title('Last pixel')
 
-    axs[2].plot(SORTED[:,-1,0])
-    axs[2].plot([0, SORTED.shape[0]],[ADPT[-1], ADPT[-1]])
+    axs[2].plot(sorted_values[:,-1,0])
+    axs[2].plot([0, sorted_values.shape[0]],[pixel_threshold[-1], pixel_threshold[-1]])
     axs[2].set_xlabel('Z plane')
     axs[2].set_title('Lowest pixel')
-    #axs[2].set_ylim([np.min(SORTED[:,-1,0]), np.max(SORTED[:,-1,0])])
+    #axs[2].set_ylim([np.min(sorted_values[:,-1,0]), np.max(sorted_values[:,-1,0])])
 
-    
+    plt.figure()
+    plt.plot(area_zplane)
+    plt.xlabel('Z plane')
+    plt.ylabel('Number of pixels')
+    plt.title('Area of mask per z-plane')
+    plt.grid()
+
 #-----------------------------------------------------------------------------
 # Validating synthetic datasets
 def dataset_comparison(ground_truth, noisy_input, output_image):
