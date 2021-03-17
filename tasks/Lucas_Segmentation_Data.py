@@ -23,7 +23,7 @@ dwnscl = False
 plttng = True
 
 # Parameters in change
-mm_th = 0.6
+th_sel = 0.8
 krn_size = 5
 exp_size = 5 # a 19 seem to be able to bridge, but slows down the 
              # code considreably
@@ -54,7 +54,7 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
 
         # Running the masking
         binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
-            adaptive_masking(img_mcherry, mm_th = mm_th, krn_size = krn_size, 
+            adaptive_masking(img_mcherry, th_sel = th_sel, krn_size = krn_size, 
             exp_size = exp_size, z_threshold = z_threshold, verbose = verbosity)
 
         # Presenting outputs
