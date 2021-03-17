@@ -10,8 +10,6 @@ from utils import calculate_worm_properties
 from utils import get_meta_info_temp
 from utils import adaptive_masking
 
-from utils.synthdata import generating_ball
-
 from utils.plotting import dataset_comparison
 from utils.plotting import masking_summary
 
