@@ -1,26 +1,30 @@
 #%% importing
-import pandas as pd
-from marit_functions import image_lists_mcherry_GFP
-from marit_functions import read_image
-from marit_functions import img_thresholding
-from marit_functions import select_zslides
-from marit_functions import calculate_worm_properties
-from marit_functions import get_meta_info_temp
 
+import _setup
+
+from utils import image_lists_mcherry_GFP
+from utils import read_image
+from utils import img_thresholding
+from utils import select_zslides
+from utils import calculate_worm_properties
+from utils import get_meta_info_temp
+from utils import adaptive_masking
+from utils import mask_postprocessing
+
+from utils.synthdata import generating_ball
+
+from utils.plotting import dataset_comparison
+from utils.plotting import masking_summary
+
+# Import additional libraries
+import pandas as pd
 import skimage.morphology as skimorph
-from lucas_functions import generating_ball
-from lucas_functions import adaptive_masking
-from lucas_functions import mask_postprocessing
-from lucas_functions import dataset_comparison
-from lucas_functions import masking_summary
-# import lucas_functions
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 #%% load parameters
 dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
-#dirpath = 'C:\Users\moraluca\Desktop\Lin28_test'
-# directory = 'W:/tungsten/scratch/ggrossha/Lucas/Live_Imaging/LJ_Lin28_Project_210116/'
-
 outputpath = 'C:/Users/moraluca/Desktop/Lin28_test/Output'
 channel_GFP =   'w1Lucas-sim-488-561'
 channel_mcherry= 'w2Lucas-sim-561-488'
@@ -36,6 +40,15 @@ list_mcherry, list_GFP = image_lists_mcherry_GFP(dirpath, channel_mcherry, chann
 print(list_mcherry)
 
 #%%
+
+# Parameters
+# Min/Max threshold
+mm_th = 1.8
+# Threshold_selection
+th_sel = .5
+# Kernel
+krn = skimorph.disk(1)
+
 #open mcherry and segment on signal
 for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
     print (i)
@@ -45,18 +58,10 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         img_gfp = read_image(file2)
         print(img_mcherry.shape)
 
-        # Parameters
-        # Min/Max threshold
-        mm_th = 1.8
-        # Threshold_selection
-        th_sel = .5
-
         # Running the function
         THPX, SORTED, ADPT, PRETH = adaptive_masking(img_mcherry, mm_th, th_sel)
 
         # Mask post-processing
-        # Kernel
-        krn = skimorph.disk(1)
         THPX = mask_postprocessing(THPX, krn)
 
         # Presenting outputs

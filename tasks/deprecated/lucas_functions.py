@@ -16,7 +16,6 @@ import scipy.ndimage.morphology as scimorph
 import skimage.morphology as skimorph
 
 
-
 #-----------------------------------------------------------------------------
 # Generating synthetic datasets
 
