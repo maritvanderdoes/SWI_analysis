@@ -11,13 +11,17 @@ from fil_finder import FilFinder2D
 import astropy.units as u
 import timeit
 
-from marit_functions import image_lists_mcherry_GFP
-from marit_functions import read_image
-from marit_functions import img_thresholding
-from marit_functions import select_zslides
-from marit_functions import calculate_worm_properties
-from marit_functions import get_meta_info_temp
+from utils import image_lists_mcherry_GFP
+from utils import read_image
+from utils import img_thresholding
+from utils import select_zslides
+from utils import calculate_worm_properties
+from utils import get_meta_info_temp
 from skimage.morphology import skeletonize, skeletonize_3d
+
+from utils import tic
+from utils import toc
+
 #%% load parameters
 dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
 outputpath = 'C:/Users/moraluca/Desktop/Lin28_test\Output'
@@ -45,13 +49,11 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         image=np.max(img_binary,0)
   
         #find and plot skeleton
-        start = timeit.default_timer()
+        start = tic()
         skeleton = skeletonize(image)
         skeleton3d = skeletonize_3d(img_binary)
 
-        stop = timeit.default_timer()
-
-        print('Time1: ', stop - start)  
+        toc(start)
         
         fig, axes = plt.subplots(1, 3, figsize=(8, 4), sharex=True, sharey=True)
         ax = axes.ravel()
@@ -72,7 +74,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         plt.show()
         
         # find longest distance
-        start = timeit.default_timer()
+        start = tic()
 
         fil = FilFinder2D(image, distance=250 * u.pc, mask=image)
         fil.preprocess_image(flatten_percent=85)
@@ -88,9 +90,7 @@ for i,(file1, file2) in enumerate(zip(list_mcherry, list_GFP)):
         plt.show()
  
 
-        stop = timeit.default_timer()
-
-        print('Time2: ', stop - start)  
+        toc(start)
         
 
 

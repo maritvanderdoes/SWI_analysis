@@ -17,6 +17,10 @@ from utils.core_utils import calculate_worm_properties
 # Masking
 from utils.core_utils import adaptive_masking
 
+# Benchmarking
+from utils.benchmarking import tic
+from utils.benchmarking import toc
+
 # Depecreted
 from utils.deprecated import select_zslides
 from utils.deprecated import find_best_interval

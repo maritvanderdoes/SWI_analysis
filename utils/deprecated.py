@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Importing required libraries
+import skimage.filters as skf
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.ndimage import gaussian_filter
+import glob
+import os
+import re
+from skimage import io
+from scipy.ndimage.measurements import label 
+from skimage.measure import regionprops
+import scipy.ndimage.morphology as scimorph
+import skimage.morphology as skimorph
+
 #----------------------------------------------------------------------------
 # selecting good chambers and  slides in focus
 
