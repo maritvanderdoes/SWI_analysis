@@ -89,7 +89,7 @@ def read_image_and_metadata(path, data_format = 'st'):
 #-----------------------------------------------------------------------------
 # read files from folder
 def image_lists(directory, channel1, channel2 = None, channel3 = None):
-    """
+    '''
     List images for different channels of the same image. Images are
     assumed to be in the same directory. Marit's convention tend to 
     order channels as mCherry, GFP and BF (see parenthesis).
@@ -113,7 +113,7 @@ def image_lists(directory, channel1, channel2 = None, channel3 = None):
     list_2 : list of files with the channel2 (GFP)
     list_3 : list of files with the channel3 (BF)
 
-    """
+    '''
     list_set = []
     list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
     list_set.append(list_1)
@@ -316,7 +316,7 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_t
 
 # Supporting functions for masking
 def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
-"""
+    '''
     Processes a binary mask to:
         - Remove noisy pixels by eroding and then dilating.
         - Filling holes.
@@ -338,7 +338,7 @@ def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 
     -------
     input_maks: Processed mask.
 
-    """
+    '''
     if krn_size>1 :
         # Kernel selection
         if krn_type == 'Disk':
@@ -402,5 +402,8 @@ def mask_refinement(input_mask, z_threshold = 0.2):
 
     # Setting values to zero
     output_mask = input_mask*maintain_values[:,None,None]
+
+    # Obtaining the number of pixels
+    area_zplane = np.sum(np.sum(output_mask,axis=2),axis = 1)
 
     return output_mask, area_zplane

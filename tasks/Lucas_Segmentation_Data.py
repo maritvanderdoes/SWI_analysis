@@ -20,23 +20,26 @@ from _parameters import data_format, verbosity
 
 # Other coding parameters
 dwnscl = False
-plttng = False
+plttng = True
 
 # Parameters in change
+mm_th = 0.6
 krn_size = 5
-exp_size = 5
+exp_size = 5 # a 19 seem to be able to bridge, but slows down the 
+             # code considreably
+z_threshold = 0.3
 
 #save retults
 results = []
 image = 0
 
 #%% list for all channels the stk files in folder
+
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
 print(list_mcherry)
 
-#%%
+#%% open mcherry and segment on signal
 
-#open mcherry and segment on signal
 for k,files in enumerate(zip(list_mcherry, list_GFP)):
     print ('Sample selected: '+str(k))
     if (k==image):
@@ -51,8 +54,8 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
 
         # Running the masking
         binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
-            adaptive_masking(img_mcherry, krn_size = krn_size, exp_size = exp_size, 
-            verbose = verbosity)
+            adaptive_masking(img_mcherry, mm_th = mm_th, krn_size = krn_size, 
+            exp_size = exp_size, z_threshold = z_threshold, verbose = verbosity)
 
         # Presenting outputs
         if plttng:
@@ -77,5 +80,5 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
         results.append(current_res)
 
         break
- # %%
+# %%
 
