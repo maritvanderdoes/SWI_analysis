@@ -169,7 +169,9 @@ def calculate_worm_properties(img_binary, img_signal):
 # Masking
 
 # Adaptive masking
-def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_type = 'Disk', exp_size = 1, z_threshold = 0.7, sorting = False, verbose = False):
+def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
+    krn_type = 'Disk', exp_size = 1, fill_holes = True, z_threshold = 0.7, 
+    sorting = False, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 
     proceeds to mask it using an adaptive threshold for each pixel.
@@ -202,6 +204,8 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
 
     exp_size: kernel size for bridging disconnected parts and smoothing 
         the shape. Default value of 1 implies this step is not performed.
+
+    fill_holes: Are holes filled?
 
     z_threshold:  threshold for the removal of spurious regions in certain
         z planes. Default value of 0.2 eliminates z planes with abnormal
@@ -247,41 +251,36 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
     output_mask = np.zeros([datdim[0],datdim[1],datdim[2]])  
     pixel_threshold = np.zeros([datdim[1]*datdim[2]])
 
-    # Generating matrix coordinates
-    x = np.arange(0, datdim[1])
-    y = np.arange(0, datdim[2])
-    X, Y = np.meshgrid(x, y)
-
     # 1. Sorting values
     if sorting:
+        # Generating matrix coordinates
+        x = np.arange(0, datdim[1])
+        y = np.arange(0, datdim[2])
+        X, Y = np.meshgrid(x, y)
+
         for z_plane in np.arange(0,datdim[0]):
             TEMPSEL = input_image[z_plane,:,:]
             IMGSEL[:,0] = np.ndarray.flatten(TEMPSEL)
             IMGSEL[:,1] = np.ndarray.flatten(X)
             IMGSEL[:,2] = np.ndarray.flatten(Y)
 
+            # Sorting values
+            sorted_values[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
             # a = np.array([[1,4,4], [3,1,1], [1,5,2], [2,1,0]]) for test
             # srt = a[a[:,0].argsort()] for test
-            sorted_values[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
 
     else:
         # Reshape
         sorted_values[:,:,0] = input_image.reshape(datdim[0], datdim[1]*datdim[2])
-        # Introduce the X and Y
-        ones_mat = np.ones([datdim[0],datdim[1],datdim[2]])
-        coord_mat = X[None,:,:]*ones_mat
-        sorted_values[:,:,1] = coord_mat.reshape(datdim[0], datdim[1]*datdim[2])
-        coord_mat = Y[None,:,:]*ones_mat
-        sorted_values[:,:,2] = coord_mat.reshape(datdim[0], datdim[1]*datdim[2])
 
     # Debugging and benchmarking
-        if verbose:
-            if sorting:
-                print('Values sorted.', end = " ")
-            else:
-                print('Values not sorted. Matrix reshaped.', end = " ")
-            stop = toc(start0)
-            start = tic()
+    if verbose:
+        if sorting:
+            print('Values sorted.', end = " ")
+        else:
+            print('Values not sorted. Matrix reshaped.', end = " ")
+        stop = toc(start0)
+        start = tic()
 
     # 2. Computing the thresholds
     MAXSORTED = np.max(sorted_values[:,:,0], axis=0)
@@ -291,14 +290,21 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
     TH = pixel_range*MTH
 
     # 3. Thresholding
-    px_vals = np.arange(0,datdim[1]*datdim[2])
-    for px in px_vals[MTH]:
-        for z_plane in np.arange(0,datdim[0]):
-            #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
-            adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
-            pixel_threshold[px] = adpt
-            output_mask[z_plane,int(sorted_values[z_plane,px,2]),int(sorted_values[z_plane,px,1])] = \
-                sorted_values[z_plane,px,0]>adpt
+    pixel_threshold = MINSORTED*(1+(TH-1)*th_sel)
+
+    if sorting:
+        px_vals = np.arange(0,datdim[1]*datdim[2])
+        for px in px_vals[MTH]:
+            for z_plane in np.arange(0,datdim[0]):
+                #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
+                #adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
+                #pixel_threshold[px] = adpt
+                output_mask[z_plane,int(sorted_values[z_plane,px,2]),int(sorted_values[z_plane,px,1])] = \
+                    sorted_values[z_plane,px,0] > pixel_threshold[px] #formerly adpt
+
+    else:
+        output_mask = (sorted_values[:,:,0]>pixel_threshold)*MTH
+        output_mask = output_mask.reshape(datdim)
 
     # Debugging and benchmarking
     if verbose:
@@ -307,7 +313,7 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
         start = tic()
 
     # 4. Removing holes
-    output_mask = _mask_postprocessing(output_mask, krn_size = krn_size, krn_type = krn_type, exp_size = exp_size)
+    output_mask = _mask_postprocessing(output_mask, krn_size = krn_size, krn_type = krn_type, exp_size = exp_size, fill_holes = fill_holes)
 
     # Debugging and benchmarking
     if verbose:
@@ -329,7 +335,7 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
     return output_mask, (sorted_values, pixel_threshold, pixel_range, area_zplane)
 
 # Supporting functions for masking
-def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
+def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1, fill_holes = True):
     '''
     Processes a binary mask to:
         - Remove noisy pixels by eroding and then dilating.
@@ -347,6 +353,8 @@ def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size =
 
     exp_size: kernel size for bridging disconnected parts and smoothing 
         the shape. Default value of 1 implies this step is not performed.
+
+    fill_holes: Are holes filled?
         
     Returns
     -------
@@ -368,8 +376,12 @@ def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size =
             # Filling holes
             input_mask[z_plane,:,:] = scimorph.binary_fill_holes(input_mask[z_plane,:,:])
 
-            # Expanding the mask
+    # Filling holes
+    if fill_holes:
+        for z_plane in np.arange(0,input_mask.shape[0]):
+            input_mask[z_plane,:,:] = scimorph.binary_fill_holes(input_mask[z_plane,:,:])
             
+    # Expanding the mask            
     if exp_size>1:
         # Kernel selection
         if krn_type == 'Disk':

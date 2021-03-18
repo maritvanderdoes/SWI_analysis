@@ -44,11 +44,11 @@ class SWIAnalysisTask(luigi.Task):
             binary_mask, additional_info = adaptive_masking(images_out[0])
 
             # Calculating properties of the segmented worm
-            # Metrics are: area, mean_intensity and min_intensity
+            # Metrics are: area, mean_intensity, min_intensity and (centroid)
             binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
 
             # Compute masked data
-            masked_data = images_out[0] * binary_mask
+            masked_data = images_out[0] * binary_image
 
             # Straightening
 
