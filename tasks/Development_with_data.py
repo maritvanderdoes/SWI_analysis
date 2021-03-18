@@ -24,14 +24,14 @@ plttng = True
 
 # Parameters in change
 th_sel = 0.3
-krn_size = 5
-exp_size = 5 # a 19 seem to be able to bridge, but slows down the 
+krn_size = 1
+exp_size = 1 # a 19 seem to be able to bridge, but slows down the 
              # code considreably
 z_threshold = 0.3
 
 #save retults
 results = []
-image = 0
+image = 2
 
 #%% list for all channels the stk files in folder
 
@@ -78,6 +78,8 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
 
         # Save results in array
         results.append(current_res)
+
+        imsave(outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',binary_image)
 
         break
 # %%

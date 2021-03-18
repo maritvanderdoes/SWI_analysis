@@ -18,7 +18,7 @@ import skimage.morphology as skimorph
 #-----------------------------------------------------------------------------
 # Loading Datasets
 
-def read_image_and_metadata(path, data_format = 'st'):
+def read_image_and_metadata(path, data_format = 'ts'):
     '''
     Reads a STK or TIFF file for a path (include filename) and return
     the (3D) image and the values for position and frame.
@@ -166,7 +166,7 @@ def calculate_worm_properties(img_binary, img_signal):
 # Masking
 
 # Adaptive masking
-def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_type = 'Disk', exp_size = 1, z_threshold = 0.2, verbose = False):
+def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_type = 'Disk', exp_size = 1, z_threshold = 0.3, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 
     proceeds to mask it using an adaptive threshold for each pixel.
