@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
+# Importing required libraries
 import skimage.filters as skf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,28 +12,44 @@ import re
 from skimage import io
 from scipy.ndimage.measurements import label 
 from skimage.measure import regionprops
-
-
-
+import scipy.ndimage.morphology as scimorph
+import skimage.morphology as skimorph
 
 #-----------------------------------------------------------------------------
-#read image and get information from image
+# Loading Datasets
 
-def get_meta_info(path):
-    pictureinfo=re.split('_s(\d+)_t(\d+)\..+', path)
-    return {'Position': pictureinfo[1], 'Frame': pictureinfo[2]}
+def get_meta_info(path, data_format = 'st'):
+    if data_format == 'st':
+        pictureinfo = re.split('_s(\d+)_t(\d+)\..+', path)
+        s_info = 1
+        t_info = 2
+    if data_format == 'ts':
+        pictureinfo = re.split('t(\d+)_s(\d+)_', path)
+        s_info = 2
+        t_info = 1
+
+    return {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
+
 
 def get_meta_info_temp(path):
-    pictureinfo=re.split('t(\d+)_s(\d+)_', path)
+    pictureinfo = re.split('t(\d+)_s(\d+)_', path)
     return {'Position': pictureinfo[2], 'Frame': pictureinfo[1]}
 
+    
 def read_image(path):
-    img = io.imread(path)
-    return img.squeeze()
+    if np.ndim(path) == 0:
+        img = io.imread(path)
+        img_output = img.squeeze()
+    else:
+        img_output = []
+        for k in enumerate(path):
+            img = io.imread(path[k[0]])
+            img_output.append(img.squeeze())
+
+    return img_output
 
 #-----------------------------------------------------------------------------
 # read files from folder
-
 def image_lists_BF_GFP(dir1, channel1, dir2):
     """
     lists GFP images in dir1/channel1 and find corresponding GFP images in dir2
@@ -121,6 +137,7 @@ def image_lists_mcherry_GFP_BF(directory, channel1,channel2,channel3):
     list_2=[name.replace(channel1, channel2) for name in list_1]     
     list_3= [name.replace(channel1, channel3) for name in list_1]  
     return list_1, list_2, list_3
+
 #----------------------------------------------------------------------------
 # selecting good chambers and  slides in focus
 
@@ -196,37 +213,6 @@ def find_best_interval(values, threshold):
 
     return best.start, best.stop
 
-def calculate_worm_properties(img_binary,img_signal):
-    '''
-    worm_proprties_output is a function that  calculates different properties 
-    (area, mean_intensity, min_intensity) of the signal images, based on the 
-    biggest segmented area in the binary image
-
-    Parameters
-    ----------
-    img_binary : binary image
-    img_signal : signal image
-
-    Returns
-    -------
-    binary_image : image that only contains the best area
-    area         : area of the best area
-    mean_intensity: mean intensity of the signal image in the best area
-    min_intensity: minimum intensity of the signal image in the best area
-
-    '''
-    
-    #select biggest area
-    ccs, num_ccs = label(img_binary) #set labels in binary image
-    properties=regionprops(ccs,img_signal,['area','mean_intensity','min_intensity']) #calculates the properties of the different areas
-    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
-    
-    binary_image= (ccs == best_region.label).astype(np.uint8)
-    min_intensity=best_region.min_intensity
-    mean_intensity=best_region.mean_intensity
-    area=best_region.area
-    
-    return binary_image, area, mean_intensity, min_intensity
 #----------------------------------------------------------------------------
 # make image binary
 
@@ -265,59 +251,3 @@ def img_thresholding(input_image):
     # plt.text(treshold+20,50, 'threshold = '+ str(treshold))
 
     return binary_image
-
-#----------------------------------------------------------------------------   
-# plotting functions
-
-def plotzslides(title,zslides,img1,img2,img3):
-    """
-    plotzslides creates a figure that shows image 1 in row 1, image 2 in row 2
-    and image 3 in row 3. It shows in the column the z slides that selected, and
-    give the title as the name of the figure
-
-    Parameters
-    ----------
-    title : string
-        DESCRIPTION.
-    zslides : array
-        DESCRIPTION.
-    img1 : 3D mCherry image
-        DESCRIPTION.
-    img2 : 3D binary image
-        DESCRIPTION.
-    img3 : 3D GFP image
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    fig, ax = plt.subplots(3,np.size(zslides), figsize=(np.size(zslides)*3,9))
-    fig.suptitle(title)
-        
-    minimum_img1=np.min(img1)
-    maximum_img1=np.max(img1)
-           
-    for counter,z in enumerate(zslides):
-        ax[0,counter].imshow(img1[z,:,:],cmap='gray',vmin=minimum_img1, vmax=maximum_img1)
-        ax[0,counter].title.set_text("zslide="+str(z))
-        ax[0,counter].set_yticks([])
-        ax[0,counter].set_xticks([])
-        ax[0,0].set_ylabel("mCherry")
-                  
-        ax[1,counter].imshow(img2[z,:,:],cmap="gray")
-        ax[1,counter].set_yticks([])
-        ax[1,counter].set_xticks([])
-        ax[1,0].set_ylabel("segmentation")
-            
-        ax[2,counter].imshow(img3[z,:,:],cmap="gray")
-        ax[2,counter].set_yticks([])
-        ax[2,counter].set_xticks([])
-        ax[2,0].set_ylabel("GFP")  
-           
-    plt.tight_layout()
-    
-    
-
-    

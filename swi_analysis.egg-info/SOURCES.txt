@@ -1,0 +1,16 @@
+README.md
+setup.py
+swi_analysis.egg-info/PKG-INFO
+swi_analysis.egg-info/SOURCES.txt
+swi_analysis.egg-info/dependency_links.txt
+swi_analysis.egg-info/requires.txt
+swi_analysis.egg-info/top_level.txt
+tasks/swi_analysis_mCherry.py
+utils/__init__.py
+utils/benchmarking.py
+utils/core_utils.py
+utils/deprecated.py
+utils/plotting/__init__.py
+utils/plotting/core_plotting.py
+utils/synthdata/__init__.py
+utils/synthdata/core_synthdata.py
