@@ -1,12 +1,11 @@
 import pandas as pd
+import numpy as np
 import luigi
 
-import warnings
 from skimage.io import imsave
 
 from utils import image_lists, read_image_and_metadata
 from utils import adaptive_masking, calculate_worm_properties
-
 from utils import tic, toc
   # import * is bad practice ;)
 
@@ -57,8 +56,9 @@ class SWIAnalysisTask(luigi.Task):
 
             
             #add properties in current results
-            current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics)))
+            current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics[0:3])))
             current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
+            current_res.update(dict(zip(('centroid_z','centroid_x','centroid_y'), metrics[3])))
 
             # Checking time
             current_res['toc'] = toc(start)
@@ -66,21 +66,15 @@ class SWIAnalysisTask(luigi.Task):
             #save in resultarray
             results.append(current_res)
 
-            # Creating summary file
-
-            # Save mask
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                # Save Mask
-                imsave(self.outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image)
-                # Save Mask
-                imsave(self.outputpath+'\Masked_Data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',masked_data)
-            
+            # Save Mask
+            imsave(self.outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image, check_contrast = False)
+            # Save Masked data
+            imsave(self.outputpath+'\Masked_data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',np.float32(masked_data), check_contrast = False)        
 
         #save file as csv
         with self.output().open('w') as out_file:
             df = pd.DataFrame(results)
-            df.to_csv(out_file, index=False)
+            df.to_csv(out_file, index=False, line_terminator='\n')
 
     def output(self):
         return luigi.LocalTarget(self.outputpath + "/results.csv")

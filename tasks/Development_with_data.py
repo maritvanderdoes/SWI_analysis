@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 
 # Saving the mask
 from skimage.io import imsave
-import warnings
 
 # load parameters
 from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
@@ -52,12 +51,11 @@ print(list_mcherry)
 for k,files in enumerate(zip(list_mcherry, list_GFP)):
     print('Sample selected: '+str(k))
 
-    if True:#(k==image):
+    if (k==image):
         print('File selected :'+files[0])
         # Reading the image and metadata
         images_out, current_res = \
             read_image_and_metadata(files, data_format = data_format)
-        print(current_res)
 
         # Downscaling (for testing purposes)
         if dwnscl:
@@ -83,20 +81,20 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
         img_overlay = images_out[0] * binary_mask
 
         # Storing the properties in current results
-        current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics)))
+        current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics[0:3])))
         current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
+        current_res.update(dict(zip(('centroid_z','centroid_x','centroid_y'), metrics[3])))
 
         # Save results in array
         results.append(current_res)
 
         # Saving the mask
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            # Mask
-            imsave(outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image)
-            # Masked_Data
-            imsave(outputpath+'\Masked_data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',img_overlay)
+        # Mask
+        imsave(outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image, check_contrast = False)
+        # Masked_Data
+        imsave(outputpath+'\Masked_data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',np.float32(img_overlay), check_contrast = False)
 
         break
-# %%
-
+# %% Saving results
+df = pd.DataFrame(results)
+df.to_csv(outputpath+'/Results2.csv', index=False)

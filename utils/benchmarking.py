@@ -14,8 +14,9 @@ def toc(start):
     Requires of the tic() function in the utils.benchmarking module.
     '''
     stop = timeit.default_timer()
-    print('Time elapsed of ' +"{:.2f}".format((stop - start))+' seconds')
-    return stop
+    elapsed = (stop - start)
+    print('Elapsed time of ' +"{:.2f}".format(elapsed)+' seconds')
+    return elapsed
 
 def downscaling(images, xy_factor = 2, z0 = None, zf = None, verbose = False):
     '''

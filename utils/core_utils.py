@@ -159,8 +159,9 @@ def calculate_worm_properties(img_binary, img_signal):
     min_intensity=best_region.min_intensity
     mean_intensity=best_region.mean_intensity
     area=best_region.area
+    centroid = best_region.centroid
 
-    metrics = (area, mean_intensity, min_intensity)
+    metrics = (area, mean_intensity, min_intensity, centroid)
     
     return binary_image, metrics
 

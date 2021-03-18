@@ -48,7 +48,7 @@ class SWIAnalysisTask(luigi.Task):
 
             
             #add properties in current results
-            current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics)))
+            current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics[0:3])))
             current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
 
             #save in resultarray
@@ -58,7 +58,7 @@ class SWIAnalysisTask(luigi.Task):
         #save file as csv
         with self.output().open('w') as out_file:
             df = pd.DataFrame(results)
-            df.to_csv(out_file, index=False)
+            df.to_csv(out_file, index=False, line_terminator='\n')
 
     def output(self):
         return luigi.LocalTarget(self.outputpath + "/results.csv")
