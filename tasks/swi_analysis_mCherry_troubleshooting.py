@@ -48,13 +48,12 @@ class SWIAnalysisTask(luigi.Task):
             binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
 
             # Compute masked data
-            masked_data = images_out[0] * binary_image
+            masked_data = images_out[1] * binary_image
 
             # Straightening
 
             # Head/Tail processing
 
-            
             #add properties in current results
             current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics[0:3])))
             current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity

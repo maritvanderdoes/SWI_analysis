@@ -80,7 +80,7 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
         binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
 
         # Creating overlay of binary image with GFP image
-        img_overlay = images_out[0] * binary_image
+        img_overlay = images_out[1] * binary_image
 
         # Storing the properties in current results
         current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics[0:3])))
