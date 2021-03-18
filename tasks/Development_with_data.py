@@ -13,7 +13,10 @@ from utils import downscaling
 # Import additional libraries
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Saving the mask
 from skimage.io import imsave
+import warnings
 
 # load parameters
 from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
@@ -49,20 +52,21 @@ print(list_mcherry)
 for k,files in enumerate(zip(list_mcherry, list_GFP)):
     print('Sample selected: '+str(k))
 
-    if (k==image):
+    if True:#(k==image):
         print('File selected :'+files[0])
         # Reading the image and metadata
-        (img_mcherry, img_gfp), meta_out = \
+        images_out, current_res = \
             read_image_and_metadata(files, data_format = data_format)
+        print(current_res)
 
         # Downscaling (for testing purposes)
         if dwnscl:
-            (img_mcherry, img_gfp) = \
-                downscaling((img_mcherry, img_gfp), verbose = verbosity)
+            images_out = \
+                downscaling(images_out, verbose = verbosity)
 
         # Running the masking
-        binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
-            adaptive_masking(img_mcherry, mm_th = mm_th, th_sel = th_sel, krn_size = krn_size, 
+        binary_mask, (sorted_values, pixel_threshold, pixel_range, area_zplane) = \
+            adaptive_masking(images_out[0], mm_th = mm_th, th_sel = th_sel, krn_size = krn_size, 
             exp_size = exp_size, z_threshold = z_threshold, sorting = False,
             verbose = verbosity)
 
@@ -70,26 +74,28 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
         if plttng:
             masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane,
                 mm_th = mm_th, scale = 'linear')
-            plotzslides('Comparison',[10,11,15,18,19],img_mcherry,binary_mask,img_gfp)
+            plotzslides([10,11,15,18,19],images_out[0],binary_mask,images_out[1])
 
         # Calculating properties of the segmented worm
-        binary_image, area, mean_intensity, min_intensity = calculate_worm_properties(
-        img_binary = binary_mask, img_signal = img_gfp)
+        binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
 
         # Creating overlay of binary image with GFP image
-        img_overlay = img_gfp * binary_mask
+        img_overlay = images_out[0] * binary_mask
 
         # Storing the properties in current results
-        current_res = meta_out  #get metadata
-        current_res['volume'] = area  #calculate volume
-        current_res['mean_intensity'] = mean_intensity
-        current_res['min_intensity'] = min_intensity
-        current_res['final_intensity'] = mean_intensity - min_intensity  #calculate intensity
+        current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics)))
+        current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
 
         # Save results in array
         results.append(current_res)
 
-        imsave(outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',255*binary_image)
+        # Saving the mask
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            # Mask
+            imsave(outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image)
+            # Masked_Data
+            imsave(outputpath+'\Masked_data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',img_overlay)
 
         break
 # %%

@@ -16,7 +16,7 @@ from skimage.measure import regionprops
 #----------------------------------------------------------------------------   
 # plotting functions
 
-def plotzslides(title,zslides,img1,img2,img3):
+def plotzslides(zslides,img1,img2,img3,title = 'Comparison'):
     """
     plotzslides creates a figure that shows image 1 in row 1, image 2 in row 2
     and image 3 in row 3. It shows in the column the z slides that selected, and

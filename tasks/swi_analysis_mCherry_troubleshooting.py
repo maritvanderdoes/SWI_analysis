@@ -1,9 +1,13 @@
 import pandas as pd
 import luigi
 
+import warnings
+from skimage.io import imsave
+
 from utils import image_lists, read_image_and_metadata
 from utils import adaptive_masking, calculate_worm_properties
 
+from utils import tic, toc
   # import * is bad practice ;)
 
 
@@ -30,6 +34,8 @@ class SWIAnalysisTask(luigi.Task):
         #open mcherry and segment on signal
         for files in zip(list_mcherry, list_GFP):
             print(files[0])
+            # Checking times
+            start = tic()
 
             # Reading the image and metadata
             # images_out[0] = mCherry, images_out[1] = GFP
@@ -42,6 +48,9 @@ class SWIAnalysisTask(luigi.Task):
             # Metrics are: area, mean_intensity and min_intensity
             binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
 
+            # Compute masked data
+            masked_data = images_out[0] * binary_mask
+
             # Straightening
 
             # Head/Tail processing
@@ -51,9 +60,22 @@ class SWIAnalysisTask(luigi.Task):
             current_res.update(dict(zip(('volume','mean_intensity','min_intensity'), metrics)))
             current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
 
+            # Checking time
+            current_res['toc'] = toc(start)
+
             #save in resultarray
             results.append(current_res)
 
+            # Creating summary file
+
+            # Save mask
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                # Save Mask
+                imsave(self.outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image)
+                # Save Mask
+                imsave(self.outputpath+'\Masked_Data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',masked_data)
+            
 
         #save file as csv
         with self.output().open('w') as out_file:
@@ -85,4 +107,4 @@ class SWIAnalysisTask(luigi.Task):
 #                 local_scheduler=True)
     
 
-# luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath C:/Users/moraluca/Desktop/Lin28_test --outputpath C:/Users/moraluca/Desktop/Lin28_test/Output --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler
+# luigi --module tasks.swi_analysis_mCherry_troubleshooting SWIAnalysisTask --dirpath C:/Users/moraluca/Desktop/Lin28_test --outputpath C:/Users/moraluca/Desktop/Lin28_test/Output --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler

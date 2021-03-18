@@ -159,8 +159,10 @@ def calculate_worm_properties(img_binary, img_signal):
     min_intensity=best_region.min_intensity
     mean_intensity=best_region.mean_intensity
     area=best_region.area
+
+    metrics = (area, mean_intensity, min_intensity)
     
-    return binary_image, area, mean_intensity, min_intensity
+    return binary_image, metrics
 
 #-----------------------------------------------------------------------------
 # Masking
@@ -323,7 +325,7 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_typ
         print('Adaptive masking finished.', end = " ")
         stop = toc(start0)
 
-    return output_mask, sorted_values, pixel_threshold, pixel_range, area_zplane
+    return output_mask, (sorted_values, pixel_threshold, pixel_range, area_zplane)
 
 # Supporting functions for masking
 def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
