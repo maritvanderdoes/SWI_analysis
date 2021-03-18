@@ -62,8 +62,7 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
 
         # Downscaling (for testing purposes)
         if dwnscl:
-            images_out = \
-                downscaling(images_out, verbose = verbosity)
+            images_out = downscaling(images_out, verbose = verbosity)
 
         # Running the masking
         binary_mask, (sorted_values, pixel_threshold, pixel_range, area_zplane) = \
