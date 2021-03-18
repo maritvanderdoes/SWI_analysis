@@ -13,6 +13,7 @@ from utils import downscaling
 # Import additional libraries
 import numpy as np
 import matplotlib.pyplot as plt
+from skimage.io import imsave
 
 # load parameters
 from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
@@ -23,15 +24,20 @@ dwnscl = False
 plttng = True
 
 # Parameters in change
+mm_th = 2.5
 th_sel = 0.3
-krn_size = 1
+krn_size = 2
 exp_size = 1 # a 19 seem to be able to bridge, but slows down the 
-             # code considreably
-z_threshold = 0.3
+             # code considreably. A faster and better implementation
+             # is to reduce the z_threshold.
+z_threshold = 0.6
+
+# Sorting mm_th = 1.8, th_sel = 0.3 and z_threshold = 0.3
+# Not Sorting mm_th = 2.5, th_sel = 0.3 and z_threshold = 0.6
 
 #save retults
 results = []
-image = 2
+image = 5
 
 #%% list for all channels the stk files in folder
 
@@ -41,8 +47,10 @@ print(list_mcherry)
 #%% open mcherry and segment on signal
 
 for k,files in enumerate(zip(list_mcherry, list_GFP)):
-    print ('Sample selected: '+str(k))
+    print('Sample selected: '+str(k))
+
     if (k==image):
+        print('File selected :'+files[0])
         # Reading the image and metadata
         (img_mcherry, img_gfp), meta_out = \
             read_image_and_metadata(files, data_format = data_format)
@@ -54,12 +62,14 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
 
         # Running the masking
         binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
-            adaptive_masking(img_mcherry, th_sel = th_sel, krn_size = krn_size, 
-            exp_size = exp_size, z_threshold = z_threshold, verbose = verbosity)
+            adaptive_masking(img_mcherry, mm_th = mm_th, th_sel = th_sel, krn_size = krn_size, 
+            exp_size = exp_size, z_threshold = z_threshold, sorting = False,
+            verbose = verbosity)
 
         # Presenting outputs
         if plttng:
-            masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane)
+            masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane,
+                mm_th = mm_th, scale = 'linear')
             plotzslides('Comparison',[10,11,15,18,19],img_mcherry,binary_mask,img_gfp)
 
         # Calculating properties of the segmented worm
@@ -79,7 +89,7 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
         # Save results in array
         results.append(current_res)
 
-        imsave(outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',binary_image)
+        imsave(outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',255*binary_image)
 
         break
 # %%

@@ -39,12 +39,17 @@ class SWIAnalysisTask(luigi.Task):
 
             # Running the masking
             binary_mask, sorted_values, pixel_threshold, pixel_range, area_zplane = \
-            adaptive_masking(img_mcherry, krn_size = 2)
+            adaptive_masking(img_mcherry)
 
             # Calculating properties of the segmented worm
             binary_image, area, mean_intensity, min_intensity = calculate_worm_properties(
             img_binary = binary_mask, img_signal = img_gfp)
 
+            # Straightening
+
+            # Head/Tail processing
+
+            
             #add properties in current results
             current_res = meta_out  #get metadata
             current_res['volume'] = area  #calculate volume
@@ -56,8 +61,8 @@ class SWIAnalysisTask(luigi.Task):
             #save in resultarray
             results.append(current_res)
 
-            # Save
-            imsave(self.outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',binary_image)
+            # Save mask
+            imsave(self.outputpath+'\Mask_t'+meta_out['Frame']+'_s'+meta_out['Position']+'.tiff',255*binary_image)
             
 
         #save file as csv

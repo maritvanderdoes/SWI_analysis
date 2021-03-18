@@ -166,7 +166,7 @@ def calculate_worm_properties(img_binary, img_signal):
 # Masking
 
 # Adaptive masking
-def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_type = 'Disk', exp_size = 1, z_threshold = 0.3, verbose = False):
+def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2, krn_type = 'Disk', exp_size = 1, z_threshold = 0.7, sorting = False, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 
     proceeds to mask it using an adaptive threshold for each pixel.
@@ -250,22 +250,35 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_t
     X, Y = np.meshgrid(x, y)
 
     # 1. Sorting values
-    for z_plane in np.arange(0,datdim[0]):
-        TEMPSEL = input_image[z_plane,:,:]
-        IMGSEL[:,0] = np.ndarray.flatten(TEMPSEL)
-        IMGSEL[:,1] = np.ndarray.flatten(X)
-        IMGSEL[:,2] = np.ndarray.flatten(Y)
+    if sorting:
+        for z_plane in np.arange(0,datdim[0]):
+            TEMPSEL = input_image[z_plane,:,:]
+            IMGSEL[:,0] = np.ndarray.flatten(TEMPSEL)
+            IMGSEL[:,1] = np.ndarray.flatten(X)
+            IMGSEL[:,2] = np.ndarray.flatten(Y)
 
-        # a = np.array([[1,4,4], [3,1,1], [1,5,2], [2,1,0]]) for test
-        # srt = a[a[:,0].argsort()] for test
-        sorted_values[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
+            # a = np.array([[1,4,4], [3,1,1], [1,5,2], [2,1,0]]) for test
+            # srt = a[a[:,0].argsort()] for test
+            sorted_values[z_plane,:,:] = IMGSEL[IMGSEL[:,0].argsort()[::-1]]
+
+    else:
+        # Reshape
+        sorted_values[:,:,0] = input_image.reshape(datdim[0], datdim[1]*datdim[2])
+        # Introduce the X and Y
+        ones_mat = np.ones([datdim[0],datdim[1],datdim[2]])
+        coord_mat = X[None,:,:]*ones_mat
+        sorted_values[:,:,1] = coord_mat.reshape(datdim[0], datdim[1]*datdim[2])
+        coord_mat = Y[None,:,:]*ones_mat
+        sorted_values[:,:,2] = coord_mat.reshape(datdim[0], datdim[1]*datdim[2])
 
     # Debugging and benchmarking
-    if verbose:
-        from utils.benchmarking import tic,toc
-        print('Values sorted.', end = " ")
-        stop = toc(start0)
-        start = tic()
+        if verbose:
+            if sorting:
+                print('Values sorted.', end = " ")
+            else:
+                print('Values not sorted. Matrix reshaped.', end = " ")
+            stop = toc(start0)
+            start = tic()
 
     # 2. Computing the thresholds
     MAXSORTED = np.max(sorted_values[:,:,0], axis=0)
@@ -275,7 +288,8 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_t
     TH = pixel_range*MTH
 
     # 3. Thresholding
-    for px in np.arange(0,np.sum(MTH)):
+    px_vals = np.arange(0,datdim[1]*datdim[2])
+    for px in px_vals[MTH]:
         for z_plane in np.arange(0,datdim[0]):
             #adpt = th_sel*MINSORTED[z_plane]*TH[z_plane]
             adpt = MINSORTED[px]*(1+(TH[px]-1)*th_sel)
@@ -285,7 +299,6 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_t
 
     # Debugging and benchmarking
     if verbose:
-        from utils.benchmarking import tic,toc
         print('Pixels thresholded.', end = " ")
         stop = toc(start)
         start = tic()
@@ -295,7 +308,6 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_t
 
     # Debugging and benchmarking
     if verbose:
-        from utils.benchmarking import tic,toc
         print('XY postprocessing.', end = " ")
         stop = toc(start)
         start = tic()
@@ -305,7 +317,6 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.3, krn_size = 1, krn_t
 
     # Debugging and benchmarking
     if verbose:
-        from utils.benchmarking import tic,toc
         print('Z postprocessing.', end = " ")
         stop = toc(start)
 
