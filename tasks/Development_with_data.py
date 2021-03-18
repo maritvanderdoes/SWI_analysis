@@ -23,7 +23,7 @@ dwnscl = False
 plttng = True
 
 # Parameters in change
-th_sel = 0.8
+th_sel = 0.3
 krn_size = 5
 exp_size = 5 # a 19 seem to be able to bridge, but slows down the 
              # code considreably

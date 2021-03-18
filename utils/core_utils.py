@@ -291,7 +291,7 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_t
         start = tic()
 
     # 4. Removing holes
-    output_mask = mask_postprocessing(output_mask, krn_size = krn_size, krn_type = krn_type, exp_size = exp_size)
+    output_mask = _mask_postprocessing(output_mask, krn_size = krn_size, krn_type = krn_type, exp_size = exp_size)
 
     # Debugging and benchmarking
     if verbose:
@@ -301,7 +301,7 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_t
         start = tic()
 
     # 5. Removing
-    output_mask, area_zplane = mask_refinement(output_mask, z_threshold = z_threshold)
+    output_mask, area_zplane = _mask_refinement(output_mask, z_threshold = z_threshold)
 
     # Debugging and benchmarking
     if verbose:
@@ -315,7 +315,7 @@ def adaptive_masking(input_image, mm_th = 1.8, th_sel = 0.4, krn_size = 1, krn_t
     return output_mask, sorted_values, pixel_threshold, pixel_range, area_zplane
 
 # Supporting functions for masking
-def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
+def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 1):
     '''
     Processes a binary mask to:
         - Remove noisy pixels by eroding and then dilating.
@@ -371,7 +371,7 @@ def mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size = 
 
     return input_mask
 
-def mask_refinement(input_mask, z_threshold = 0.2):
+def _mask_refinement(input_mask, z_threshold = 0.2):
     """
     Processes a binary mask to:
         - Removing z planes that do present areas below a threshold.

@@ -21,12 +21,12 @@ import skimage.morphology as skimorph
 def get_meta_info(path, data_format = 'st'):
     if data_format == 'st':
         pictureinfo = re.split('_s(\d+)_t(\d+)\..+', path)
-        s_info = 0
-        t_info = 1
+        s_info = 1
+        t_info = 2
     if data_format == 'ts':
         pictureinfo = re.split('t(\d+)_s(\d+)_', path)
-        s_info = 1
-        t_info = 0
+        s_info = 2
+        t_info = 1
 
     return {'Position': pictureinfo[s_info], 'Frame': pictureinfo[t_info]}
 

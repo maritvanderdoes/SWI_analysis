@@ -1,7 +1,6 @@
 #%% importing
 import _setup
 
-from utils import calculate_worm_properties
 from utils import adaptive_masking
 
 from utils.plotting import dataset_comparison
