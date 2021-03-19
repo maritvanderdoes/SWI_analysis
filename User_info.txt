@@ -2,6 +2,8 @@
 dirpath = 'C:/Users/moraluca/Desktop/Lin28_test'
 outputpath = 'C:/Users/moraluca/Desktop/Lin28_test\Output'
 
+# luigi --module tasks.swi_analysis_mCherry_troubleshooting SWIAnalysisTask --dirpath //tungstenfs/scratch/ggrosha/Lucas/Live_Imaging/LJ_Lin28_Project_210226 --outputpath //tungstenfs/nobackup/ggrosha/moraluca/lin28_new_210226 --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler
+
 # Marit's datasets
 dirpath = ''
 outputpath = ''

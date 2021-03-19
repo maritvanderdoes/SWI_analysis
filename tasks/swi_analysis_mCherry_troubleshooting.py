@@ -101,3 +101,5 @@ class SWIAnalysisTask(luigi.Task):
     
 
 # luigi --module tasks.swi_analysis_mCherry_troubleshooting SWIAnalysisTask --dirpath C:/Users/moraluca/Desktop/Lin28_test --outputpath C:/Users/moraluca/Desktop/Lin28_test/Output --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler
+
+# luigi --module tasks.swi_analysis_mCherry_troubleshooting SWIAnalysisTask --dirpath /tungstenfs/scratch/ggrossha/Lucas/Live_Imaging/LJ_Lin28_Project_210116 --outputpath /tungstenfs/nobackup/ggrossha/moraluca/lin28_new_210116 --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler

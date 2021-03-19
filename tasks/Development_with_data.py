@@ -27,11 +27,11 @@ plttng = True
 svngfl = True
 
 # Parameters in change
-sorting = False
+sorting = True
 mm_th = 2.5
 th_sel = 0.3
 krn_size = 1
-fill_holes = False
+fill_holes = True
 exp_size = 1 # a 19 seem to be able to bridge, but slows down the 
              # code considreably. A faster and better implementation
              # is to reduce the z_threshold.
