@@ -21,8 +21,12 @@ The output should look like:
 - After the job is finished, kill the screen by typing: <code>exit</code>
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
-## Working with conda and python
+## Working with Python 
 - To run the code of interest: <code>python <i>name of the file.py</i></code>
 - Activate the conda environment: <code>conda activate <i>SWI</i></code>
   - To create a new conda environment: <code>conda create --name <i>SWI</i> python=3.6</code>
   - To install each package: <code>conda install <i>numpy=1.19</i></code>
+- Running a task with luigi:
+  ```
+  luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
+  ```
