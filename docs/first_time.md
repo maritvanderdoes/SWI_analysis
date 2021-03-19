@@ -39,13 +39,16 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
   ```
   luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /tungstenfs/scratch/ggrossha/Lucas/Live_Imaging/LJ_Lin28_Project_210116 --outputpath /tungstenfs/nobackup/ggrossha/moraluca/lin28_new_210116 --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler
   ```
+9. If everything is working well, the filename should be displayed.
 
 ## Common issues
 ❓ **The code seems to run, but it does not find any image:** Either you have not put the path correctly (you might need the <code>/</code> at the beginning, or the channel extensions are not wwritten properly (due to compression, the extension can be renamed to <code>.tiff</code> from <code>.stk</code>).
 
 ❓ **I receive the error displayed below:** There is an issue with your <code>scikit-image</code> package and the image is not loaded properly (it lacks the z-dimension). You should try to install a different version of the package.
 ```
-ERROR: [pid 49948] Worker Worker(salt=929306007, workers=1, host=f146l-f6ad55, username=moraluca, pid=49948) failed    SWIAnalysisTask(dirpath=C:/Users/moraluca/Desktop/Lin28_test, outputpath=C:/Users/moraluca/Desktop/Lin28_test/Output, channel_GFP=w1Lucas-sim-488-561.stk, channel_mcherry=w2Lucas-sim-561-488.stk)
+ERROR: [pid 49948] Worker Worker(salt=929306007, workers=1, host=f146l-f6ad55, username=moraluca, pid=49948) failed 
+SWIAnalysisTask(dirpath=C:/Users/moraluca/Desktop/Lin28_test, outputpath=C:/Users/moraluca/Desktop/Lin28_test/Output, 
+channel_GFP=w1Lucas-sim-488-561.stk, channel_mcherry=w2Lucas-sim-561-488.stk)
 Traceback (most recent call last):
   File "c:\programdata\anaconda3\lib\site-packages\luigi\worker.py", line 191, in run
     new_deps = self._run_get_new_deps()
@@ -57,5 +60,10 @@ Traceback (most recent call last):
     sorted_values = np.zeros([datdim[0],datdim[1]*datdim[2],3])
   ```
 
+❓ **I do not have a results folder:** The job might:
+- Not finished.
+- Finish prematurely due to an error.
+- The output folder migth be incorrect. Check if you can find a folder that should not be in the <code>SWI_analysis</code> folder.
+- Server maintenance might have ended the job prematurely. Make sure not to queue jobs before a maintenance event. You can know these events through the fmi email. 
 
 For further information [please follow this link](docs/xenon7.md). 
