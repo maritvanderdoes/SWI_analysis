@@ -6,6 +6,14 @@ First open the terminal (in Mac) or type <code>cmd</code> after clicking Windows
 ## Local or Xenon?
 If you are running the code in the xenon7, follow this section. Otherwise, jump to the next part.
 
+0. If you are not at FMI, connect to the network by Pulse Secure.
+1. Open the terminal and type:
+```
+conda create -n swi-analysis python=3.6
+```
+2. Potat
+3. 
+
 - Connect to pulse secure if you are not at the FMI
 - Open the terminal and type: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 - Create a new screen: <code>screen</code>
