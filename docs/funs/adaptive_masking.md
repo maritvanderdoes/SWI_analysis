@@ -9,15 +9,15 @@ output_mask, additional_info = adaptive_masking(
 ```
 **Inputs**
 - <code>input_image</code>: Image used to generate the matrix. In our current protocol, it is the mCherry channel.
-- <code>mm_th</code>
-- <code>th_sel</code>
-- <code>krn_size</code>
-- <code>krn_type</code>
-- <code>exp_size</code>
-- <code>fill_holes</code>
-- <code>z_threshold</code>
-- <code>sorting</code>
-- <code>verbose</code>
+- <code>mm_th</code>: Value for the max/min ratio for a pixel at which it is consider to contain signal at some z-plane(s).
+- <code>th_sel</code>: Relative threshold value at which 
+- <code>krn_size</code>: Erosion/dilation kernel size for the removal of spurious pixels due to scattered ligth.
+- <code>krn_type</code>: Kernel type for the further (x,y)-postprocessing. 'Disk" by default, but it allows for 'Square".
+- <code>exp_size</code>: Dilation/erosion kernel size for the smoothing and bridging of the mask.
+- <code>fill_holes</code>: Whether or not to fill the holes in the mask.
+- <code>z_threshold</code>: Relative threshold at which the mask in a z-plane is kept.
+- <code>sorting</code>: Whether or not to sort the intensity values at each z-plane.
+- <code>verbose</code>: Verbose mode, displaying each step and time taken.
 
 **Outputs**
 - <code>output_mask</code>: Segmented data of same dimensions of <code>input_image</code>.
