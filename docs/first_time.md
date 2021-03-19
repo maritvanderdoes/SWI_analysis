@@ -1,7 +1,7 @@
 # First time using the SWI_analysis package
 Here is a detalied tutorial con how to use the cod
 
-First open the terminal (in Mac) or type cmd after clicking Windows button (in Windows).
+First open the terminal (in Mac) or type <code>cmd</code> after clicking Windows button (in Windows).
 
 ## Local or Xenon?
 If you are running the code in the xenon7, follow this section. Otherwise, jump to the next part.
