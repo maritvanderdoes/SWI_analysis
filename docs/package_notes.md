@@ -1,11 +1,23 @@
 # Package notes:
 
 ## Main functions
+The package has two main functions for the average user. These functions are tuned in such a way that are friendly to use and requires little to no knowledge. For a more detailed description
 - <code>swi_analysis_mcherry.py</code> :runs the script
-- <code>marit_functions.py</code>  : contains all the functions that are needed to run the script
 - <code>plot_complete_dataset.py</code> : plots the results
 
 ## The *Utils* package
+These algorithms requires of 
+
+## Analysis workflow
+Here is a sketch on the operations that the main analysis code, <code>swi_analysis_mcherry.py</code>, performs:
+1. Determines the files within a folder with the corresponding channels (masking and signal, mCherry and GFP). This is performed by <code>image_lists.py</code>.
+2. Iterates over each file, loading one at a time. The information about position and time is retrieved. This is performed by <code>read_image_and_metadata.py</code>.
+3. Using the masking channel (mCherry), a mask is generated. This is performed by <code>adaptive_masking.py</code>. For a detailed analysis in this function see [here](funs/adaptive_masking.md)
+4. Worm properties are measured using the masking channel (mCherry) on the signal channel (GFP). Computed properties are _area_, _mean intensity_ and _min intensity_. This is performed by <code>calculate_worm_properties.py</code>. 
+5. _(NOT AVAILABLE IN THE CURRENT VERSION)_ If selected, the worm is straigthened. 
+6. _(NOT AVAILABLE IN THE CURRENT VERSION)_ Using the straigthening information, the head and the tail are operated.
+7. Properties are saved on <code>results.csv</code>. 
+
 
 
 ## Additional information and complementary packages
