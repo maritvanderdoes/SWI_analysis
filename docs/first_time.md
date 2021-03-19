@@ -46,6 +46,13 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
 
 ❓ **I cannot dettach my screen:** Probably you are not running on a screen. Check if the terminal window title displays the word screen.
 
+❓ **I do not have a results folder:** The job might:
+- Not finished.
+- Finish prematurely due to an error.
+- The screen was closed before dettaching.
+- The output folder migth be incorrect. Check if you can find a folder that should not be in the <code>SWI_analysis</code> folder.
+- Server maintenance might have ended the job prematurely. Make sure not to queue jobs before a maintenance event. You can know these events through the fmi email. 
+
 ❓ **I receive the error displayed below:** There is an issue with your <code>scikit-image</code> package and the image is not loaded properly (it lacks the z-dimension). You should try to install a different version of the package.
 ```
 ERROR: [pid 49948] Worker Worker(salt=929306007, workers=1, host=f146l-f6ad55, username=moraluca, pid=49948) failed 
@@ -60,13 +67,12 @@ Traceback (most recent call last):
     binary_mask, additional_info = adaptive_masking(images_out[0])
   File "d:\github\swi_analysis\utils\core_utils.py", line 249, in adaptive_masking
     sorted_values = np.zeros([datdim[0],datdim[1]*datdim[2],3])
-  ```
-
-❓ **I do not have a results folder:** The job might:
-- Not finished.
-- Finish prematurely due to an error.
-- The screen was closed before dettaching.
-- The output folder migth be incorrect. Check if you can find a folder that should not be in the <code>SWI_analysis</code> folder.
-- Server maintenance might have ended the job prematurely. Make sure not to queue jobs before a maintenance event. You can know these events through the fmi email. 
+```
+  
+This can be seen by typing
+```
+print(images_out[0].shape)
+> (1200, 1200)  # It should be (28, 1200, 1200)
+```
 
 For further information [please follow this link](docs/xenon7.md). 
