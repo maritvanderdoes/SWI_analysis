@@ -20,12 +20,13 @@ Here is a sketch on the operations that the main analysis code, <code>swi_analys
 
 ## Development and troubleshooting code
 The package has two main functions for the average user. These functions are tuned in such a way that are friendly to use and requires little to no knowledge. For a more detailed description
-- <code>Development_with_data.py</code>:
 - <code>Development_with_synth.py</code>:
+- <code>Development_with_data.py</code>: Development code using synthetic data.
 - <code>swi_analysis_mcherry_troubleshooting.py</code>: It works as <code>swi_analysis_mcherry.py</code> but additionally:
   - Prints and stores elapsed time.
   - Computes and stores the centroids of the worm.
   - Saves the mask and the masked data.
+  This code
 
 
 ## Additional information and complementary packages
