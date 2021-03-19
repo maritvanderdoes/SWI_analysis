@@ -23,6 +23,10 @@ Here is a sketch on the operations that the main analysis code, <code>swi_analys
 6. _(NOT AVAILABLE IN THE CURRENT VERSION)_ Using the straigthening information, the head and the tail are operated.
 7. Properties are saved on <code>results.csv</code>. 
 
+## Plotting algorithm
+Here is a sketch on the operations that the main analysis code, <code>plot_complete_dataset.py</code> and how to operate:
+- Dataset...
+
 ## Development and troubleshooting code
 ### Main development and troubleshooting scripts
 The advanced user of the package can found some more detailed code with higher flexibility. These scripts for test and development are the following:
