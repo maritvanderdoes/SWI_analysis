@@ -39,7 +39,7 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
   ```
   luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /tungstenfs/scratch/ggrossha/Lucas/Live_Imaging/LJ_Lin28_Project_210116 --outputpath /tungstenfs/nobackup/ggrossha/moraluca/lin28_new_210116 --channel-GFP w1Lucas-sim-488-561.stk --channel-mcherry w2Lucas-sim-561-488.stk --local-scheduler
   ```
-9. If everything is working well, the filename should be displayed.
+9. If everything is working well, the filename should be displayed. You can detach the screen by pressing <kbd>ctrl</kbd>+<kbd>a</kbd>,  <kbd>ctrl</kbd>+<kbd>d</kbd>. Now you can safely close the window.
 
 ## Common issues
 ❓ **The code seems to run, but it does not find any image:** Either you have not put the path correctly (you might need the <code>/</code> at the beginning, or the channel extensions are not wwritten properly (due to compression, the extension can be renamed to <code>.tiff</code> from <code>.stk</code>).
