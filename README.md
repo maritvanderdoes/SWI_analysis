@@ -1,4 +1,4 @@
-# SWI_analysis package description
+# :worm: SWI_analysis package description
 ## General description
 Project to analyse single worm imaging (SWI) experiments, focused for endogenous levels of proteins. The package allows for the quantification of a fluorescent report by means of segmenting of worms using a paralell fluorescence channel.
 
