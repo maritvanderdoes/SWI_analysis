@@ -48,6 +48,7 @@ The output should look like:
 - If you want to stop the code, you must click <kbd>ctrl</kbd>+<kbd>c</kbd>
   
 # git commands and links for help with git
+[docs/useful_github.md]
 - First time: clone the repository from the website with   <code> git clone (link of the repository) </code>
 - Next times:
  check which branch you are, and the status of the branch: <code>git status </code>
