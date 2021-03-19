@@ -3,10 +3,10 @@
 Project to analyse single worm imaging (SWI) experiments, focused for endogenous levels of proteins. The package allows for the quantification of a fluorescent report by means of segmenting of worms using a paralell fluorescence channel.
 
 ## 📚 Package notes
-Current version of the code is 0.2(.21-03-18_LJ). A detail description of the codes [can be found here](docs/package_notes.md)
+Current version of the code is 0.2(.21-03-18_LJ). A detailed description of the codes [can be found here](docs/package_notes.md).
 
 ## 🔬 Imaging notes
-The code has been developed with a certain properties in mind and in a specific way. Information about these [can be found here](docs/imaging_notes.md)
+The code has been developed with a certain properties in mind and in a specific way. Information about these [can be found here](docs/imaging_notes.md).
 
 # 🖥️ User's guide
 ## 1️⃣ Running the code for the first time
@@ -47,4 +47,4 @@ Other functions beyond <code>swi_analysis_mCherry</code> can be run, but these c
 The file <code>results.csv</code> can be analysed by using the function <code>plot_complete_dataset.py</code>. However, this code requires of a script processor such as spyder or visual studio code (vscode).
 
 # 🤔 Other (useful) information
-[Here is a list of useful commands for GitHub](docs/github_usage.md)
+[Here is a list of useful commands for GitHub](docs/github_usage.md).
