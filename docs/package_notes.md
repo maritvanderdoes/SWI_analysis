@@ -29,5 +29,8 @@ The package has two main functions for the average user. These functions are tun
   - Saves the mask and the masked data.
 
 
+## Deprecated code
+Deprecated code can be found on the submodule <code>deprecated</code> in <code>utils</code>.
+
 ## Additional information and complementary packages
 A note on this package, it seems that the version of scikit-image might be 0.15 instead of 0.17.
