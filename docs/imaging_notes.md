@@ -11,7 +11,7 @@ The code has been developed with data acquired as follows:
 - Then the brightfield channel is recorded _sequentially_ ⚪
 
 ## Imaging workflow \[Grosshans' lab user\]
-As a microscope and tungsten user:
+As a microscope and <code>tungsten</code> user:
 1. Copy the raw data into <code>scratch</code>.
 2. Quality check.
 3. Compress the data using the <code>StkToTifImageCompressionWorkflow</code> workflow from <code> www.vcl1048.fmi.ch/frontend/jobs</code>.
