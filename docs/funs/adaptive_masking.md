@@ -10,7 +10,7 @@ output_mask, additional_info = adaptive_masking(
 **Inputs**
 - <code>input_image</code>: Image used to generate the matrix. In our current protocol, it is the mCherry channel.
 - <code>mm_th</code>: Value for the max/min ratio for a pixel at which it is consider to contain signal at some z-plane(s).
-- <code>th_sel</code>: Relative threshold value at which 
+- <code>th_sel</code>: Relative threshold value at which the information for a pixel at a certain z-plane is kept.
 - <code>krn_size</code>: Erosion/dilation kernel size for the removal of spurious pixels due to scattered ligth.
 - <code>krn_type</code>: Kernel type for the further (x,y)-postprocessing. 'Disk" by default, but it allows for 'Square".
 - <code>exp_size</code>: Dilation/erosion kernel size for the smoothing and bridging of the mask.
