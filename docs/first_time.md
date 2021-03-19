@@ -41,9 +41,23 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
   ```
 
 ## Common issues
-**The code seems to run, but it does not find any image:** Either you have not put the path correctly (you might need the <code>/</code> at the beginning, or the channel extensions are not wwritten properly (due to compression, the extension can be renamed to <code>.tiff</code>.
+**The code seems to run, but it does not find any image:** Either you have not put the path correctly (you might need the <code>/</code> at the beginning, or the channel extensions are not wwritten properly (due to compression, the extension can be renamed to <code>.tiff</code> from <code>.stk</code>).
 
+**I receive the error displayed below:** There is an issue with your <code>scikit-image</code> package and the image is not loaded properly (it lacks the z-dimension). You should try to install a different version of the package.
+```
 
+ERROR: [pid 49948] Worker Worker(salt=929306007, workers=1, host=f146l-f6ad55, username=moraluca, pid=49948) failed    SWIAnalysisTask(dirpath=C:/Users/moraluca/Desktop/Lin28_test, outputpath=C:/Users/moraluca/Desktop/Lin28_test/Output, channel_GFP=w1Lucas-sim-488-561.stk, channel_mcherry=w2Lucas-sim-561-488.stk)
+Traceback (most recent call last):
+  File "c:\programdata\anaconda3\lib\site-packages\luigi\worker.py", line 191, in run
+    new_deps = self._run_get_new_deps()
+  File "c:\programdata\anaconda3\lib\site-packages\luigi\worker.py", line 133, in _run_get_new_deps
+    task_gen = self.task.run()
+  File "d:\github\swi_analysis\tasks\swi_analysis_mCherry_troubleshooting.py", line 45, in run
+    binary_mask, additional_info = adaptive_masking(images_out[0])
+  File "d:\github\swi_analysis\utils\core_utils.py", line 249, in adaptive_masking
+    sorted_values = np.zeros([datdim[0],datdim[1]*datdim[2],3])
+    
+  ```
 
 
 For further information [please follow this link](docs/xenon7.md). 
