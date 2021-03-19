@@ -6,7 +6,7 @@ Project to analyse single worm imaging (SWI) experiments, focused for endogenous
 Current version of the code is 0.2. A detail description of the codes [can be found here](docs/package_notes.md)
 
 ## 🔬 Imaging notes
-The code has been developed with a certain properties in mind and in a specific way. Information about these [can be found here](docs/imaging_noes.md)
+The code has been developed with a certain properties in mind and in a specific way. Information about these [can be found here](docs/imaging_notes.md)
 
 # 🖥️ User's guide
 ## 1️⃣ Running the code for the first time
