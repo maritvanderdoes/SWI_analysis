@@ -33,6 +33,8 @@ The advanced user of the package can found some more detailed code with higher f
   - The output from the masking algorithm is plottled. To activate this, set <code>plttng</code> to <code>True</code>.
   - The masking and masked data are saved. To activate this, set <code>svngfl</code> to <code>True</code>.
   - The verbose mode is activate. This gives extra output about the different steps performed and the time taken. To activate this, set <code>verbosity</code> to <code>True</code>.
+  - If the package <code>utils</code> is not installed, then <code>_setup.py</code> adds the folder to the path.
+  - To avoid crowding, general information is saved in <code>_parameters.py</code>. This is useful for automatic activation and cross-compability between developers.
 - <code>swi_analysis_mcherry_troubleshooting.py</code>: This code is intentionally developed to be run as <code>swi_analysis_mcherry.py</code>. This code additionally:
   - Prints and stores elapsed time.
   - Computes and stores the centroids of the worm.
