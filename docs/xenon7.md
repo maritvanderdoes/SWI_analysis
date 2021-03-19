@@ -12,8 +12,8 @@
 The output should look like:
   ```
   There are screens on: 
-  &nbsp; &nbsp;   <b>97684</b>.pts-9.xenon7   (Detached)
-  &nbsp; &nbsp;  <b>118940</b>.pts-1.xenon7   (Detached)
+           97684.pts-9.xenon7   (Detached)
+           118940.pts-1.xenon7   (Detached)
   ```
 - To reattach the screen: <code>screen -r <i>number</i></code> (i.e.: 97684)
   - The selected screen will now be displayed. <br>
