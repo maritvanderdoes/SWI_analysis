@@ -39,5 +39,5 @@ Other functions beyond <code>swi_analysis_mCherry</code> can be run, but these c
 The file <code>results.csv</code> can be analysed by using the function <code>plot_complete_dataset.py</code>.
 
 
-# Git information
+# 🤔 Other (useful) information
 [Here is a list of useful commands for GitHub](docs/github_usage.md)
