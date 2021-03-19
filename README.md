@@ -13,7 +13,8 @@ The code has been developed with a certain properties in mind and in a specific 
 **If this is the first time using the package, [please follow this link](docs/first_time.md).**
 
 ## 📆 Running the code following times
-**Running the code in the xenon7**
+**Loading configuration for usage in the xenon7**
+
 If the code is being run locally, then skip this step. Otherwise, type in the terminal
 ```
 ssh <i>username</i>@xenon7.fmi.ch
@@ -26,8 +27,9 @@ screen
 ```
 For more information on the usage of the Xenon7 server and screens, [please follow this link](docs/xenon7.md).
 
-**Running the code locally**
-First activate the environment and install the package. To do so, open the terminal and type:
+**Running the code**
+
+This step can be run in a screen or locally. First activate the environment and install the package. To do so, open the terminal and type:
 ```
 conda activate swi-analysis
 pip install -e .
@@ -41,8 +43,7 @@ The output of is given by <code>results.csv</code>. These results can be analyse
 Other functions beyond <code>swi_analysis_mCherry</code> can be run, but these codes are more advanced. For that, check the [package notes](docs/package_notes.md)
 
 ## 📈 Plotting the data
-The file <code>results.csv</code> can be analysed by using the function <code>plot_complete_dataset.py</code>.
-
+The file <code>results.csv</code> can be analysed by using the function <code>plot_complete_dataset.py</code>. However, this code requires of a script processor such as spyder or visual studio code (vscode).
 
 # 🤔 Other (useful) information
 [Here is a list of useful commands for GitHub](docs/github_usage.md)
