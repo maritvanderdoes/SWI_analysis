@@ -1,8 +1,11 @@
-Useful github
+# How to use GitHub
 
-- First time: clone the repository from the website with   <code> git clone (link of the repository) </code>
-- Next times:
- check which branch you are, and the status of the branch: <code>git status </code>
+## Starting with GitHub
+The first time, you should clone the repository from the website with the following command: <code> git clone (link of the repository) </code>
+
+## Commands
+Following times you can:
+- Check which branch you are, and the status of the branch: <code>git status </code>
 - Download the recent github version of the code: <code> git fetch </code> or <code> git pull </code>
 - Check which branches are there:  <code> git branch --list </code>
 - create branch and go there <code>git branch (name_branch) -> git checkout (name_branch)</code>  or  <code>git checkout -b (name_branch)</code>
@@ -14,7 +17,7 @@ Useful github
 - Delete your branch  <code> git branch -d (branchname) </code>
 
 
-
+## Other useful links
 tutorial:
 https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet
 
