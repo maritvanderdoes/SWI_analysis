@@ -14,7 +14,7 @@ The code has been developed with data acquired as follows:
 As a microscope and tungsten user:
 1. Copy the raw data into <code>scratch</code>.
 2. Quality check.
-3. Compress the data using the <code>StkToTifImageCompressionWorkflow</code> workflow from <code><html><a href= vcl1048.fmi.ch/frontend/jobs>vcl1048.fmi.ch/frontend/jobs/</a></html></code>.
+3. Compress the data using the <code>StkToTifImageCompressionWorkflow</code> workflow from <code><html><a href= www.vcl1048.fmi.ch/frontend/jobs>vcl1048.fmi.ch/frontend/jobs/</a></html></code>.
 4. Delete the raw data once the compressed data has been checked.
 5. Send the compressed data to tape.
 6. If the data is now having a reduced ussage, send it to <code>nobackup</code>.
