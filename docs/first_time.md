@@ -27,4 +27,6 @@ pip install -e .
 
 ## Cloning the repository
 To clone this repository, type 
-<code> git clone https://github.com/maritvanderdoes/SWI_analysis.git </code>
+```
+git clone https://github.com/maritvanderdoes/SWI_analysis.git 
+```
