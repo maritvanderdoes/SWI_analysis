@@ -7,4 +7,10 @@ Alternatively, files of the form <code>basename_sY_tX_additionainfo.extension</c
 
 ## Recording features
 
+## Imaging workflow \[Grosshans' lab user\]
+As a microscope and tungsten user
+1.
+
+
+
 ## Technical considerations
