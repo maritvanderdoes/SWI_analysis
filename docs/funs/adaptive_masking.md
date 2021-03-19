@@ -24,7 +24,7 @@ The way to compute the binary mask from <code>input_image</code> follows these s
    - If <code>krn_size > 1</code>, the mask is eroded and then dilated to remove spurious pixels. The kernel type is given by <code>krn_type</code>.
    - If <code>fill_holes = True</code>, the holes in the mask are filled.
    - If <code>exp_size > 1</code>, the mask is dilated and then eroded to smooth the data out. The kernel type is given by <code>krn_type</code>. <br>
-   This is performed by the auxiliary function <code>_mask_postprocessing.py</code>.
+This is performed by the auxiliary function <code>_mask_postprocessing.py</code>.
 5. To ensure there are not spurious dispersed masking areas in the z-planes belonging to the "edges" of the worm, these z-planes are set to zero if the masking area is below the threshold defined by <code>z_threshold</code>\*max_area_in_zplanes. This is performed by the auxiliary function <code>_mask_refinement.py</code>.
 
 ## Data considerations
