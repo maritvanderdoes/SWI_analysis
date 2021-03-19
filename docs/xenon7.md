@@ -1,5 +1,5 @@
 # Running the code in the xenon7 server
-## Connecting to 
+## Connecting to the server
 - Connect to pulse secure if you are not at the FMI
 - Open the terminal and type: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
 
@@ -25,7 +25,8 @@ The output should look like:
 - To run the code of interest: <code>python <i>name of the file.py</i></code>
 - Activate the conda environment: <code>conda activate <i>SWI</i></code>
   - To create a new conda environment: <code>conda create --name <i>SWI</i> python=3.6</code>
-  - To install each package: <code>conda install <i>numpy=1.19</i></code>
+  - To install the SWI_package: <code>pip install -e .</code>
+  - To install other packages manually: <code>conda install <i>numpy=1.19</i></code>
 - Running a task with luigi:
   ```
   luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
