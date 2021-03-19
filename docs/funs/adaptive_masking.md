@@ -32,10 +32,25 @@ The algorithm assumes that:
 - The shape of the instensity distribution is maintained.
 - No major anomalies.
 
-## Masking modes
-Depending of the choice of parameters
-
 ## Supporting packages
 The function requires of the <code>numpy</code>, <code>scikit-image</code> and <code>scipy</code> packages.
 
 ## Performance
+### Benchmarking
+For an image of dimensions (28, 1200, 1200) on an alienware computer with an intel core i7 8th gen processor and 8GB ram, it takes:
+- Sorting/not sorting (Step 1): ~8/1 seconds.
+- Thresholding (Step 3): ~1 second.
+- Pixel removal (Step 4.a):
+  - <code>krn_size = 2</code> ~1 second.
+- Filling holes (Step 4.b): ~1 second.
+- Mask smoothing (Step 4.c):
+  - <code>exp_size = 2</code> ~1 second.
+- Z removal (Step 5): ~0.5 seconds.
+
+### Masking modes
+A faster performance can lead to a lower quality masking (rough edges, holes, different regions). We will assume there is no sorting, the kernels are given by a disk, <code>th_sel = 0.3</code> and <code>z_threshold = 0.7</code>. Here we can classify different modes:
+- **Raw mask**: No pixel removal, no filling holes, no mask smoothing. Fast mode (~ 1.5 second)
+- **Just filling holes**: No pixel removal, filling holes, no mask smoothing. Relatively fast mode (~ 3 seconds). Really jagged edges and pixels due to out-of-focus and dispersed light are accepted, giving an abnormal worm outline.
+- **Decent fidelity**: Current setup. Pixel removal (size of 2), filling holes, no mask smoothing. Masking takes ~5 seconds per worm. Jagged edges, but not too critical. No spurious individual pixels.
+- **Good fidelity**: Pixel removal (size of 2), filling holes, mask smoothing (size of 2). Relatively slow mode (~8 seconds).
+- **Excellent fidelity**: Pixel removal (size of >3), filling holes, mask smoothing (size of >3). Slow mode (>10 seconds).
