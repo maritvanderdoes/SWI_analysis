@@ -26,6 +26,7 @@ The package has two main functions for the average user. These functions are tun
   - Prints and stores elapsed time.
   - Computes and stores the centroids of the worm.
   - Saves the mask and the masked data.
+  
   This code
 
 
