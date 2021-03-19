@@ -28,10 +28,12 @@ Then, to run the task, type:
 luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
 ```
 
+The output of is given by <code>results.csv</code>. These results can be analysed using the package.
+
 Other functions beyond <code>swi_analysis_mCherry</code> can be run, but these codes are more advanced. For that, check the [package notes](docs/package_notes.md)
 
 ## 📈 Plotting the data
-Once the code has been run, it is possible.
+The file <code>results.csv</code> can be analysed by using the function <code>plot_complete_dataset.py</code>.
 
 
 # Git information
