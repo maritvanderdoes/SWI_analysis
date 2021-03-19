@@ -44,6 +44,8 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
 ## Common issues
 ❓ **The code seems to run, but it does not find any image:** Either you have not put the path correctly (you might need the <code>/</code> at the beginning, or the channel extensions are not wwritten properly (due to compression, the extension can be renamed to <code>.tiff</code> from <code>.stk</code>).
 
+❓ **I cannot dettach my screen:** Probably you are not running on a screen. Check if the terminal window title displays the word screen.
+
 ❓ **I receive the error displayed below:** There is an issue with your <code>scikit-image</code> package and the image is not loaded properly (it lacks the z-dimension). You should try to install a different version of the package.
 ```
 ERROR: [pid 49948] Worker Worker(salt=929306007, workers=1, host=f146l-f6ad55, username=moraluca, pid=49948) failed 
