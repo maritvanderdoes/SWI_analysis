@@ -2,11 +2,11 @@
 
 ## Main functions
 The package has two main functions for the average user. These functions are tuned in such a way that are friendly to use and requires little to no knowledge. For a more detailed description
-- <code>swi_analysis_mcherry.py</code> :runs the script
-- <code>plot_complete_dataset.py</code> : plots the results
+- <code>swi_analysis_mcherry.py</code>: runs the analysis workflow and saves it in <code>results.csv</code>. For a description of this function, see **Analysis workflow** down below 
+- <code>plot_complete_dataset.py</code>: plots the results from the workflow.
 
 ## The *Utils* package
-These algorithms requires of 
+These algorithms requires of our own package, utils. This package can be found in the repository and it is installed with the rest of the functions.
 
 ## Analysis workflow
 Here is a sketch on the operations that the main analysis code, <code>swi_analysis_mcherry.py</code>, performs:
