@@ -8,9 +8,9 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
 
 0. If you are not at FMI, connect to the network by Pulse Secure.
 1. Open the terminal and type:
-```
-conda create -n swi-analysis python=3.6
-```
+  ```
+  conda create -n swi-analysis python=3.6
+  ```
 2. Potat
 3. 
 
