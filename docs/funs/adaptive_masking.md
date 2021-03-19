@@ -20,8 +20,12 @@ The way to compute the binary mask from <code>input_image</code> follows these s
 1. If <code>sorting = True</code>, the pixels are sorted in descending order based on intensity levels for each z-plane. Otherwise, the data is just reshaped into a 2D matrix of (z, x\*y)-dimensions.
 2. For each (sorted) pixel, the ratio between the maximum and minimum intensity is computed. This metric determines whether a pixel belongs to background or to actual signal (at least in a z-plane). Background pixels have a much lower intensity range, and thus by applying a direct threshold, the background pixels can be removed. Such threshold is defined by the variable <code>mm_th</code>.
 3. The signal pixels are determined whether are mask or not at different z-values, based on the threshold defined by <code>th_sel</code>. If the value of intensity for the pixel at a certain z-plane is above the threshold given by <code>th_sel</code>\*min_value_pixel, then it is defined to be mask (1). Otherwise, the pixel at that z-plane is defined not to be mask (0).
-4. As the algorithm might not. This is performed by the auxiliary function <code>_mask_postprocessing.py</code>.
-5. 
+4. As the algorithm might not give accurate mask or it could contain holes, a further post-processing step is performed. In this step:
+   - If <code>krn_size > 1</code>, the mask is eroded and then dilated to remove spurious pixels. The kernel type is given by <code>krn_type</code>.
+   - If <code>fill_holes = True</code>, the holes in the mask are filled.
+   - If <code>exp_size > 1</code>, the mask is dilated and then eroded to smooth the data out. The kernel type is given by <code>krn_type</code>.
+   This is performed by the auxiliary function <code>_mask_postprocessing.py</code>.
+5. To ensure there are not spurious dispersed masking areas in the z-planes belonging to the "edges" of the worm, these z-planes are set to zero if the masking area is below the threshold defined by <code>z_threshold</code>\*max_area_in_zplanes. This is performed by the auxiliary function <code>_mask_refinement.py</code>.
 
 ## Data considerations
 The algorithm assumes that:
