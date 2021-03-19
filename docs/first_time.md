@@ -28,7 +28,11 @@ If you are running the code in the xenon7, follow this section. Otherwise, jump 
   cd SWI_analysis
   conda create -n SWI python=3.6
   ```
-6. To activate the environment and install the package, type
+6. Create a new screen by typing
+  ```
+  screen
+  ```
+7. To activate the environment and install the package, type
   ```
   conda activate SWI
   pip install -e .
