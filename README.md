@@ -14,19 +14,22 @@ Current version of the code is 0.2. A detail description of the codes [can be fo
 If the code is being run on the xenon7 server, [please follow this link](docs/xenon7.md).
 If the code is being run locally, then proceed reading.
 
-First
-
+## Running the code locally
+First activate the environment and install the package. To do so, open the terminal and type:
 ```
 conda activate swi-analysis
 pip install -e .
 ```
 
-
-## Running the task
-
+Then, to run the task, type:
 ```
 luigi --module tasks.swi_analysis_mCherry SWIAnalysisTask --dirpath /some/folder/with/images/ --channel-GFP pattern488 --channel-mcherry pattern566 --local-scheduler
 ```
+
+Other types
+
+## Plotting the data
+Once the code has been run, it is possible.
 
 
 # Git information
