@@ -10,10 +10,22 @@ output_mask, additional_info = adaptive_masking(
 **Inputs**
 - <code>input_image</code>
 - <code>mm_th</code>
+- <code>th_sel</code>
+- <code>krn_size</code>
+- <code>krn_type</code>
+- <code>exp_size</code>
+- <code>fill_holes</code>
+- <code>z_threshold</code>
+- <code>sorting</code>
+- <code>verbose</code>
 
 **Outputs**
 - <code>output_mask</code>
 - <code>additional_info</code>
+  - <code>sorted_values</code>
+  - <code>pixel_threshold</code>
+  - <code>pixel_range</code>
+  - <code>area_zplane</code>
 
 ## Algorithm description
 The way to compute the binary mask from <code>input_image</code> follows these steps:
