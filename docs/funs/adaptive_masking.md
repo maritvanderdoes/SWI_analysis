@@ -66,3 +66,6 @@ A faster performance can lead to a lower quality masking (rough edges, holes, di
 - **Decent fidelity**: Current setup. Pixel removal (size of 2), filling holes, no mask smoothing. Masking takes ~5 seconds per worm. Jagged edges, but not too critical. No spurious individual pixels.
 - **Good fidelity**: Pixel removal (size of 2), filling holes, mask smoothing (size of 2). Relatively slow mode (~8 seconds).
 - **Excellent fidelity**: Pixel removal (size of >3), filling holes, mask smoothing (size of >3). Slow mode (>10 seconds).
+
+### Synthetic datasets
+The mask is extracted on its entiry for a synthetic ball and parameters <code>mm_th = 1.05</code>, <code>th_sel = 0.5</code> and <code>z_threshold = 0.3</code>. The ground truth and the masked data differ in two pixels (out of 120^2).
