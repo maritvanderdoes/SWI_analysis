@@ -25,7 +25,7 @@ To open a new screen, type
 ```
 screen
 ```
-For more information on the usage of the Xenon7 server and screens, [please follow this link](docs/xenon7.md).
+For more information on the usage of the Xenon7 server and screens (as well as certain useful python commands), [please follow this link](docs/xenon7.md).
 
 
 **Running the code**
