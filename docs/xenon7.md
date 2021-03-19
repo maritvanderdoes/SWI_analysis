@@ -2,6 +2,7 @@
 ## Connecting to the server
 - Connect to pulse secure if you are not at the FMI
 - Open the terminal and type: <code>ssh <i>username</i>@xenon7.fmi.ch</code>
+- Type your password.
 
 ## Working with screens
 - Create a new screen: <code>screen</code>
