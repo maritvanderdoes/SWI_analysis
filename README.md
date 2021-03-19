@@ -27,6 +27,7 @@ screen
 ```
 For more information on the usage of the Xenon7 server and screens, [please follow this link](docs/xenon7.md).
 
+
 **Running the code**
 
 This step can be run in a screen or locally. First activate the environment and install the package. To do so, open the terminal and type:
