@@ -65,6 +65,7 @@ Traceback (most recent call last):
 ❓ **I do not have a results folder:** The job might:
 - Not finished.
 - Finish prematurely due to an error.
+- The screen was closed before dettaching.
 - The output folder migth be incorrect. Check if you can find a folder that should not be in the <code>SWI_analysis</code> folder.
 - Server maintenance might have ended the job prematurely. Make sure not to queue jobs before a maintenance event. You can know these events through the fmi email. 
 
