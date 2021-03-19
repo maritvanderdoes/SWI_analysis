@@ -1,6 +1,6 @@
 # Adaptive masking
 ## Function description and inputs
-This function takes an 3D input image (z,x,y) and extracts the mask
+This function takes an 3D input image of shape (z,x,y) and extracts the mask
 ```
 output_mask, additional_info = adaptive_masking(
     input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
@@ -8,7 +8,7 @@ output_mask, additional_info = adaptive_masking(
     z_threshold = 0.7, sorting = False, verbose = False):
 ```
 **Inputs**
-- <code>input_image</code>
+- <code>input_image</code>: Image used to generate the matrix. In our current protocol, it is the mCherry channel.
 - <code>mm_th</code>
 - <code>th_sel</code>
 - <code>krn_size</code>
@@ -20,16 +20,16 @@ output_mask, additional_info = adaptive_masking(
 - <code>verbose</code>
 
 **Outputs**
-- <code>output_mask</code>
-- <code>additional_info</code>
-  - <code>sorted_values</code>
-  - <code>pixel_threshold</code>
-  - <code>pixel_range</code>
-  - <code>area_zplane</code>
+- <code>output_mask</code>: Segmented data of same dimensions of <code>input_image</code>.
+- <code>additional_info</code>: Tuple containing the following information:
+  - <code>sorted_values</code>: Sorted values. If <code>sorting = False</code>, it returns the reshaped matrix of <code>input_image</code> with (z, x\*y)-shape.
+  - <code>pixel_threshold</code>: Threshold value for each pixel, given by <code>th_sel</code>\*min_value_pixel. The shape of this variable is given by (x\*y,).
+  - <code>pixel_range</code>: Ratio between the highest intensity value and the lowest per z-plane. The shape of this variable is given by (x\*y,).
+  - <code>area_zplane</code>: Area of the mask at each z-plane (after processing). The shape is given by (z,).
 
 ## Algorithm description
 The way to compute the binary mask from <code>input_image</code> follows these steps:
-1. If <code>sorting = True</code>, the pixels are sorted in descending order based on intensity levels for each z-plane. Otherwise, the data is just reshaped into a 2D matrix of (z, x\*y)-dimensions.
+1. If <code>sorting = True</code>, the pixels are sorted in descending order based on intensity levels for each z-plane. Otherwise, the data is just reshaped into a 2D matrix of (z, x\*y)-shape.
 2. For each (sorted) pixel, the ratio between the maximum and minimum intensity is computed. This metric determines whether a pixel belongs to background or to actual signal (at least in a z-plane). Background pixels have a much lower intensity range, and thus by applying a direct threshold, the background pixels can be removed. Such threshold is defined by the variable <code>mm_th</code>.
 3. The signal pixels are determined whether are mask or not at different z-values, based on the threshold defined by <code>th_sel</code>. If the value of intensity for the pixel at a certain z-plane is above the threshold given by <code>th_sel</code>\*min_value_pixel, then it is defined to be mask (<code>1</code>). Otherwise, the pixel at that z-plane is defined not to be mask (<code>0</code>).
 4. As the algorithm might not give accurate mask or it could contain holes, a further post-processing step is performed. In this step:
