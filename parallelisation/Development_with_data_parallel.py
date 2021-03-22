@@ -13,6 +13,8 @@ from utils import downscaling, tic, toc, list_scramble
 # Import additional libraries
 import numpy as np
 import matplotlib.pyplot as plt
+import multiprocessing
+import pandas as pd
 
 # Saving the mask
 from skimage.io import imsave
@@ -60,9 +62,8 @@ else:
     list_GFP = list_GFP[image]
 
 def main_function(list_mcherry, list_GFP):
-    # print('Sample selected: '+str(k))
-    # if image == None:
-    #     print('Actual number: '+str(permutation_array[k]))
+    # Combining both files
+    files = (list_mcherry,list_GFP)
 
     print('File selected :'+files[0])
     # Reading the image and metadata
@@ -115,4 +116,5 @@ if __name__ == '__main__':
 
 # %% Saving results
 df = pd.DataFrame(results)
-df.to_csv(outputpath+'/Results2.csv', index=False)
+df.to_csv(outputpath+'/Results_par.csv', index=False)
+# %%
