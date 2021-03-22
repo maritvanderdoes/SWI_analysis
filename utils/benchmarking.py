@@ -88,3 +88,30 @@ def downscaling(images, xy_factor = 2, z0 = None, zf = None, verbose = False):
             print('*Assuming identical size')
 
     return downscaled_images
+
+def list_scramble(list_channel1, list_channel2, n_draws = 5, random = True):
+    if n_draws > 0: 
+        # Computing dimension
+        dim = np.shape(list_channel1)
+
+        # Check for minimum
+        n_draws = min(dim[0], n_draws)
+
+        # Generate array
+        permutation_array = np.arange(0, dim[0])
+
+        if random:
+            # Permute the array
+            permutation_array = np.random.permutation(permutation_array)
+
+        # Extract the n_draws values
+        permutation_array = permutation_array[0:n_draws]
+
+        # Saving the channels
+        list_channel1 = [list_channel1[k] for k in permutation_array]
+        list_channel2 = [list_channel2[k] for k in permutation_array]
+
+    else:
+        permutation_array = None
+
+    return list_channel1, list_channel2, permutation_array

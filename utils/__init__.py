@@ -19,6 +19,7 @@ from utils.core_utils import _mask_refinement
 from utils.benchmarking import tic
 from utils.benchmarking import toc
 from utils.benchmarking import downscaling
+from utils.benchmarking import list_scramble
 
 # Depecreted
 from utils.deprecated import read_image

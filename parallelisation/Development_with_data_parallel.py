@@ -59,11 +59,10 @@ else:
     list_mcherry = list_mcherry[image]
     list_GFP = list_GFP[image]
 
-
-for k,files in enumerate(zip(list_mcherry, list_GFP)):
-    print('Sample selected: '+str(k))
-    if image == None:
-        print('Actual number: '+str(permutation_array[k]))
+def main_function(list_mcherry, list_GFP):
+    # print('Sample selected: '+str(k))
+    # if image == None:
+    #     print('Actual number: '+str(permutation_array[k]))
 
     print('File selected :'+files[0])
     # Reading the image and metadata
@@ -97,15 +96,22 @@ for k,files in enumerate(zip(list_mcherry, list_GFP)):
     current_res['final_intensity'] = metrics[1] - metrics[2]  #calculate intensity
     current_res.update(dict(zip(('centroid_z','centroid_x','centroid_y'), metrics[3])))
 
-    # Save results in array
-    results.append(current_res)
-
     # Saving the mask
     if svngfl:
         # Mask
         imsave(outputpath+'\Mask_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',255*binary_image, check_contrast = False)
         # Masked_Data
         imsave(outputpath+'\Masked_data_t'+current_res['Frame']+'_s'+current_res['Position']+'.tiff',np.float32(img_overlay), check_contrast = False)
+
+    return current_res
+
+#%%
+if __name__ == '__main__':
+    #multiprocessing.set_start_method("spawn")
+    p = multiprocessing.Pool(5)
+    results = p.starmap(main_function, zip(list_mcherry, list_GFP))
+    print(results)
+    p.close()
 
 # %% Saving results
 df = pd.DataFrame(results)
