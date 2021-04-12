@@ -1,12 +1,12 @@
 import pandas as pd
 import luigi
 
-from .marit_functions import image_lists_mcherry_GFP
-from .marit_functions import read_image
-from .marit_functions import img_thresholding
-from .marit_functions import select_zslides
-from .marit_functions import calculate_worm_properties
-from .marit_functions import get_meta_info_temp
+from marit_functions import image_lists_mcherry_GFP
+from marit_functions import read_image
+from marit_functions import img_thresholding
+from marit_functions import select_zslides
+from marit_functions import calculate_worm_properties
+from marit_functions import get_meta_info_temp
   # import * is bad practice ;)
 
 
@@ -34,6 +34,7 @@ class SWIAnalysisTask(luigi.Task):
         #open mcherry and segment on signal
         for (file1, file2) in zip(list_mcherry, list_GFP):
             print(file1)
+            print('a')
 
             img_mcherry = read_image(file1)
             img_gfp = read_image(file2)
@@ -72,13 +73,13 @@ class SWIAnalysisTask(luigi.Task):
         return luigi.LocalTarget(self.outputpath + "/results.csv")
 
 
-# if __name__ == '__main__':
-#     luigi.build([
-#         SWIAnalysisTask(
-#             dirpath="/Users/Marit/Documents/work/HBL1gfp_worm6",
-#             outputpath="/Users/Marit/Documents",
-#             channel_GFP="w1Lucas-sim-488-561",
-#             channel_mcherry="w2Lucas-sim-561-488")
-#     ],
-#                 local_scheduler=True)
+if __name__ == '__main__':
+    luigi.build([
+        SWIAnalysisTask(
+            dirpath="/Users/Marit/Documents/work/test_images/HBL1gfp_worm6",
+            outputpath="/Users/Marit/Documents",
+            channel_GFP="w1Lucas-sim-488-561",
+            channel_mcherry="w2Lucas-sim-561-488")
+    ],
+                local_scheduler=True)
     
