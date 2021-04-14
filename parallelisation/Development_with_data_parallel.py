@@ -23,10 +23,14 @@ from skimage.io import imsave
 from _parameters import dirpath, outputpath, channel_GFP, channel_mcherry
 from _parameters import data_format, verbosity
 
+# Development code
+parmod = True # Should we get into parallel or simple loop?
+n_workers = 5
+
 # Other coding parameters
-dwnscl = False
-plttng = True
-svngfl = True
+dwnscl = False # Should we downscale the data?
+plttng = True # Should we plot/save outputs?
+svngfl = True # Should we save the mask/masked data?
 
 # Parameters in change
 sorting = True
@@ -45,22 +49,23 @@ z_threshold = 0.6
 #save retults
 results = []
 image = None
+n_draws = 5
 
 #%% list for all channels the stk files in folder
 
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
-print(list_mcherry)
-
-#%% open mcherry and segment on signal
 
 # Selection of datasets (random or spefic image)
 if image == None:
     list_mcherry, list_GFP, permutation_array =  \
-        list_scramble(list_mcherry, list_GFP, n_draws = 3, random = True)
+        list_scramble(list_mcherry, list_GFP, n_draws = n_draws, random = True)
 else:
     list_mcherry = list_mcherry[image]
     list_GFP = list_GFP[image]
 
+print(list_mcherry)
+
+#%%
 def main_function(list_mcherry, list_GFP):
     # Combining both files
     files = (list_mcherry,list_GFP)
@@ -106,13 +111,21 @@ def main_function(list_mcherry, list_GFP):
 
     return current_res
 
-#%%
-if __name__ == '__main__':
-    #multiprocessing.set_start_method("spawn")
-    p = multiprocessing.Pool(5)
-    results = p.starmap(main_function, zip(list_mcherry, list_GFP))
-    print(results)
-    p.close()
+#%% Iterating
+if parmod:
+    print('Parallel mode. Make sure you are running from the terminal.')
+    if __name__ == '__main__':
+        # Defining the number of processes
+        p = multiprocessing.Pool(n_workers)
+        results = p.starmap(main_function, zip(list_mcherry, list_GFP))
+        p.close()
+else:
+    print('Sequential mode')
+    for k,files in enumerate(zip(list_mcherry, list_GFP)):
+        current_res = main_function(files[0], files[1])
+        # Save results in array
+        results.append(current_res)
+    
 
 # %% Saving results
 df = pd.DataFrame(results)
