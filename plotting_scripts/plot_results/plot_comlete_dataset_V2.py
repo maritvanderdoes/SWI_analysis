@@ -8,10 +8,10 @@ import numpy as np
 import seaborn as sns
 
 # %% Import CSV files
-dir='/Users/Marit/Documents/programming/python/resultstoplot'
+dir='/Users/Marit/Documents/programming/python/'
 
-CSV_quantification = pd.read_csv(dir+"/resultsall.csv")
-CSV_annotation= pd.read_csv(dir+"/goodworms_combined.csv")
+CSV_quantification = pd.read_csv(dir+"kymograph_stats.csv")
+CSV_annotation= pd.read_csv(dir+"goodworms_johnson.csv")
 min_image_taken=15
 
 # %% filtering dataset for quality and Time
@@ -27,8 +27,8 @@ CSV_quantification['Time'] = CSV_quantification.apply(lambda row : select_timepo
 CSV_quantification= CSV_quantification.dropna(subset=['Time'],axis='index') #selects only worms in between hatch and excape
 
 # %% select the conditions you want to plot
-CSV_singlecondition=CSV_quantification[(CSV_quantification.Condition=='lin42') 
-                                    | (CSV_quantification.Condition=='control3')
+CSV_singlecondition=CSV_quantification[(CSV_quantification.Condition=='control') 
+                                    | (CSV_quantification.Condition=='lin14')
                                                                                 ]
 
 # oselect the worm you want to plot
@@ -38,11 +38,18 @@ CSV_singleworm=CSV_quantification[CSV_quantification.Position==wormtoplot]
 # %% plots whole dataset
 plt.figure(1)
 sns.set_theme(style="darkgrid")
-fig, axs = plt.subplots(2, 1,figsize=(30,15),sharex=True)
+fig, axs = plt.subplots(2, 1, figsize=(10,15),sharex=True)
 sns.lineplot(ax=axs[0],x='Time',y='final_intensity',hue='Condition',data=CSV_quantification,legend=True).set_title('final intensity')
 sns.lineplot(ax=axs[1],x='Time',y='volume',hue='Condition',data=CSV_quantification,legend=False).set_title('volume')
 axs[1].semilogy()
-    
+
+# %% plots whole dataset
+plt.figure()
+sns.set_theme(style="darkgrid")
+sns.lineplot(x='Time',y='Intensity_BGsub',hue='Condition',data=CSV_quantification,legend=True).set_title('final intensity')
+#sns.lineplot(ax=axs[1],x='Time',y='volume',hue='Condition',data=CSV_quantification,legend=False).set_title('volume')
+#axs[1].semilogy()
+plt.show()
 # %% Plot individual worms or conditions
 plt.figure(2)
 sns.set_theme(style="darkgrid")
@@ -57,3 +64,7 @@ fig, axs = plt.subplots(2, 1,figsize=(10,15),sharex=True)
 sns.lineplot(ax=axs[0],x='Time',y='final_intensity',hue='Condition',data=CSV_singlecondition,legend=True).set_title('final intensity')
 sns.lineplot(ax=axs[1],x='Time',y='volume',hue='Condition',data=CSV_singlecondition,legend=False).set_title('volume')
 axs[1].semilogy()
+
+
+
+# %%
