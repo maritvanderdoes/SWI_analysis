@@ -32,7 +32,7 @@ Lucas_data_format = 'ts'
 Lucas_verbose = True
 
 # Marit
-Marit_path = '/Users/Marit/Documents/work/test_images/HBL1gfp_worm6'
+Marit_path = '/Users/Marit/Documents/work/test_images'
 Marit_data_format = 'ts'
 Marit_verbose = False
 
@@ -49,6 +49,10 @@ elif os.path.exists(Marit_path):
     print('Directory set for Marit, as', end=" ")
 else:
     print('No available paths have been found. No data_format has selected')
+
+
+dirpath = '/tungstenfs/scratch/ggrossha/Marit/HetP_Quant/20201224_HBL1'
+data_format = 'ts'
 
 if os.path.exists(dirpath):
     print(dirpath)

@@ -4,17 +4,14 @@ import luigi
 from utils import image_lists, read_image_and_metadata
 from utils import adaptive_masking, calculate_worm_properties
 
-  # import * is bad practice ;)
+
 
 
 class SWIAnalysisTask(luigi.Task):
 
-    #folder with images
-    dirpath = luigi.Parameter()
-
-    #output folder
-    outputpath= luigi.Parameter()
-
+    
+    dirpath = luigi.Parameter() #folder with images
+    outputpath= luigi.Parameter()     #output folder
     #channels
     channel_GFP = luigi.Parameter()  # '1Lucas-sim-488-561'
     channel_mcherry = luigi.Parameter()  # '2Lucas-sim-561-488'
@@ -33,16 +30,19 @@ class SWIAnalysisTask(luigi.Task):
 
             # Reading the image and metadata
             # images_out[0] = mCherry, images_out[1] = GFP
-            images_out, current_res = read_image_and_metadata(files)
+            (img_mCherry, img_GFP), current_res = read_image_and_metadata(files)
 
             # Running the masking
-            binary_mask, additional_info = adaptive_masking(images_out[0])
+            binary_mask, additional_info = adaptive_masking(img_mCherry)
 
             # Calculating properties of the segmented worm
             # Metrics are: area, mean_intensity and min_intensity
-            binary_image, metrics = calculate_worm_properties(binary_mask, images_out[1])
+            binary_image, metrics = calculate_worm_properties(binary_mask, img_GFP)
 
             # Straightening
+            Xinput,Yinput=create_skeleton(twoDimage,twoDmask)
+            X,Y,dx,dy=create_spline(Xinput,Yinput, verbose=False)
+            imgtoshow=straighten_image(img_binary,X,Y,dx,dy)
 
             # Head/Tail processing
 
