@@ -18,6 +18,7 @@ from utils.core_utils import _mask_refinement
 
 #straightening
 from utils.core_utils import create_skeleton, create_skeleton, create_spline, straighten_image2D, straighten_image3D,head2tail_masking
+from utils.core_utils import straighten_image2D_dual
 
 
 # Benchmarking

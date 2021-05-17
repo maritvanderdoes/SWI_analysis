@@ -655,7 +655,7 @@ def straighten_image2D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1,width_w
     # Debugging and benchmarking
     if verbose:
         start = tic()
-        print('Straightening the worm. Verbose mode.', end = " ")
+        print('Straightening the worm. Verbose mode.')
 
     # create new coordinate system
     # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
@@ -679,6 +679,49 @@ def straighten_image2D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1,width_w
         stop = toc(start)    
 
     return straightened_image, (xcoord, ycoord)
+
+def straighten_image2D_dual(images_to_be_straightened,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Straightening the worm. Verbose mode.')
+
+
+    straightened_images = []
+
+    # create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
+    n = np.arange(-width_worm,width_worm,sampling_space)
+    xcoord = X[:,None] - n[None,:]*dy[:,None]
+    ycoord = Y[:,None] + n[None,:]*dx[:,None]
+
+    shapex=np.shape(images_to_be_straightened)[2]
+    shapey=np.shape(images_to_be_straightened)[1]
+    
+    grid_x, grid_y = np.meshgrid(np.arange(0,shapex),np.arange(0,shapey))
+    coord_old = np.array([grid_x.reshape(shapex*shapey),grid_y.reshape(shapex*shapey)]).T
+
+    if verbose:
+        print('Creating the grid.', end = " ")
+        stop = toc(start)
+        start = tic()
+
+    for k, image_to_be_straighten in enumerate(images_to_be_straightened):
+        #new image
+        intensity_old = image_to_be_straighten.reshape(shapex*shapey)
+        intensity_new = interpolate.griddata(coord_old, intensity_old, (ycoord.reshape(xcoord.size), xcoord.reshape(ycoord.size)))
+        straightened_image= np.squeeze(intensity_new).reshape(xcoord.shape)
+        straightened_image=np.nan_to_num(straightened_image)
+
+        # Stacking
+        straightened_images.append(straightened_image)
+
+        if verbose:
+            print('Straightening a worm.', end = " ")
+            stop = toc(start)
+            start = tic()
+
+    return straightened_images, (xcoord, ycoord)
 
 
 def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
