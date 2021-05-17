@@ -28,6 +28,8 @@ from scipy import interpolate
 from sklearn.neighbors import NearestNeighbors
 from sklearn.neighbors import KNeighborsRegressor
 
+from utils.benchmarking import tic,toc
+
 
 
 #-----------------------------------------------------------------------------
@@ -145,7 +147,7 @@ def image_lists(directory, channel1, channel2 = None, channel3 = None):
 
 #-----------------------------------------------------------------------------
 # Calculating worm properties
-def crop_image(img_binary, img_signal):
+def crop_image(img_binary, img_signal, verbose = False):
     """crop worm is a function that gets a cropped image of the biggest
     segmented region in the image.
 
@@ -157,6 +159,12 @@ def crop_image(img_binary, img_signal):
         cropped_image (3D arary): [description]
         cropped_binary (3D arary): [description]
     """
+
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Cropping mask. Verbose mode.', end = " ")
+
     ccs, num_ccs = label(img_binary) #set labels in binary image
     properties=regionprops(ccs,img_signal,['area']) #calculates the properties of the different areas
     best_region = max(properties, key=lambda region: region.area) #selects the biggest region
@@ -164,10 +172,14 @@ def crop_image(img_binary, img_signal):
     cropped_binary=best_region.image
     cropped_image=best_region.intensity_image
 
-    return cropped_binary,cropped_image 
+    # Debugging and benchmarking
+    if verbose:
+        stop = toc(start)
+
+    return cropped_binary, cropped_image 
 
 
-def calculate_worm_properties(img_binary, img_signal):
+def calculate_worm_properties(img_binary, img_signal, verbose = False):
     """calculate worm properties is a function that calculate the area of the segmented area
     in the binary image, and calculate the mean intensity of this segmented area in the image signal.
     This mean intensity is substracted by the minimum intensity as background substraction
@@ -180,6 +192,11 @@ def calculate_worm_properties(img_binary, img_signal):
         mean_intensity: [description]
         volume        : 
     """
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Calculating worm properties. Verbose mode.', end = " ")
+
     ccs, num_ccs = label(img_binary) #set labels in binary image
 
     if (num_ccs==1):
@@ -189,10 +206,17 @@ def calculate_worm_properties(img_binary, img_signal):
         mean_intensity=properties[0].mean_intensity-properties[0].min_intensity
         volume=properties[0].area
 
+        # Debugging and benchmarking
+        if verbose:
+            stop = toc(start)
+
         return (mean_intensity, volume)
     
     else:
-        print('multiple areas are selected, segmentation not good')
+        # Debugging and benchmarking
+        if verbose:
+            stop = toc(start)
+        print('Multiple areas are selected, segmentation not good.')
         return (0,0)
 
 #-----------------------------------------------------------------------------
@@ -268,7 +292,6 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
     """
     # Debugging and benchmarking
     if verbose:
-        from utils.benchmarking import tic,toc
         start0 = tic()
         print('Adaptive masking. Verbose mode')
 
@@ -496,7 +519,7 @@ def create_skeleton(mask, verbose=False):
     
     return X,Y
 
-def create_spline(X,Y, sampling_space=1 ,verbose=False):
+def create_spline(X,Y, sampling_space=1 , s=100, k=3, n_neighbors = 2, verbose=False):
     """Creates a spline through the X and Y coordinates by a number of splinepoints.
     This gives as output the rescaled x and y, and the derivatives of the line.
     Idea explained from 
@@ -513,13 +536,17 @@ def create_spline(X,Y, sampling_space=1 ,verbose=False):
         dx:
         dy:
     """
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Creating spline. Verbose mode.', end = " ")
 
     #variables
     nsplinepoints=int(X.shape[0]/sampling_space)
     inputarray = np.c_[X, Y]
 
     # runs a nearest neighbors algorithm on the coordinate array
-    clf = NearestNeighbors(n_neighbors=2).fit(inputarray)
+    clf = NearestNeighbors(n_neighbors=n_neighbors).fit(inputarray)
     G = clf.kneighbors_graph()
     T = nx.from_scipy_sparse_matrix(G)
 
@@ -553,7 +580,7 @@ def create_spline(X,Y, sampling_space=1 ,verbose=False):
     # plt.show()
 
     # fits a spline to the ordered coordinates
-    tckp, u = interpolate.splprep([xxx, yyy], s=100, k=3) #s = smoothing is 100, nest=-1
+    tckp, u = interpolate.splprep([xxx, yyy], s = s, k = k) #s = smoothing is 100, nest=-1
     x_new, y_new = interpolate.splev(np.linspace(0,1,nsplinepoints), tckp)
     dx, dy = interpolate.splev(np.linspace(0,1,nsplinepoints), tckp,der=1)
 
@@ -562,12 +589,10 @@ def create_spline(X,Y, sampling_space=1 ,verbose=False):
     dx=dx/magnitude
     dy=dy/magnitude
 
-    if (verbose==True):
-        plt.plot(x_new,y_new)
-        plt.title('fittet spline')
+    if verbose:
+        stop = toc(start)
 
-
-    return x_new,y_new, dx,dy
+    return x_new, y_new, dx, dy
 
 def straighten_image3D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1, verbose=False):
     """
@@ -627,9 +652,13 @@ def straighten_image3D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1, verbos
     return straightened_image
 
 def straighten_image2D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Straightening the worm. Verbose mode.', end = " ")
 
-    #create new coordinate system
-    # new coord system= old coordinate system + (-dy,dx)*new coordinate system
+    # create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
     n = np.arange(-width_worm,width_worm,sampling_space)
     xcoord = X[:,None] - n[None,:]*dy[:,None]
     ycoord = Y[:,None] + n[None,:]*dx[:,None]
@@ -646,30 +675,18 @@ def straighten_image2D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1,width_w
     straightened_image= np.squeeze(intensity_new).reshape(xcoord.shape)
     straightened_image=np.nan_to_num(straightened_image)
 
-
-
-
     if (verbose==True):
-        plt.figure()
-        plt.imshow(image_to_be_straighten.T)
-        plt.plot(X,Y)
-        plt.plot(xcoord.T,ycoord.T)
-        plt.title("original image with sampling")
-        plt.axis('off')
-        plt.show()
+        stop = toc(start)    
+
+    return straightened_image, (xcoord, ycoord)
 
 
-        plt.figure()
-        plt.imshow(straightened_image, cmap='gray')
-        plt.title("straightened image")
-        plt.axis('off')
-        plt.show()
+def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
 
-    
-
-    return straightened_image
-
-def head2tail_masking(X,Y,dx,dy,img_binary,cut_th=0.2, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.', end = " ")
 
     # # check for sizes
     # if np.ndim(img_binary)==2:
@@ -739,14 +756,9 @@ def head2tail_masking(X,Y,dx,dy,img_binary,cut_th=0.2, verbose=False):
 
 
     #adapt if it is 2D!!!
-    if (verbose==True):
-        plt.figure()
-        plt.imshow(np.max(binary_new,0),cmap='gray')
-        plt.title('Reduced length by '+str(cut_th*100)+"%")
-        plt.axis('off')
+    if verbose:
+        stop = toc(start)
         
-
-
     return binary_new
 
 def arc_length(x, y):

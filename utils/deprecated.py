@@ -16,6 +16,8 @@ import scipy.ndimage.morphology as scimorph
 import skimage.morphology as skimorph
 from fil_finder import FilFinder2D
 import astropy.units as u
+from utils.benchmarking import tic,toc
+
 
 #-----------------------------------------------------------------------------
 # Loading Datasets
@@ -294,7 +296,7 @@ def calculate_worm_properties(img_binary, img_signal):
     
     return  metrics
 
-def create_skeleton(image,mask, verbose=False):
+def create_skeleton(image, mask, verbose=False):
     """ function uses the package https://fil-finder.readthedocs.io/en/latest/ 
     to create skeleton and prune the she skeleton based on the colored image. 
     Images can be in 3D, but it creates a skeleton based on the maximum intensity projection of the 3D images.
@@ -312,11 +314,15 @@ def create_skeleton(image,mask, verbose=False):
         Y:
     
     """
-    
-    zslide_to_focus=np.int(mask.shape[0]/2)
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Computing the skeleton. Verbose mode.', end = " ")
 
-    image2D=image[zslide_to_focus,:,:]
-    mask2D=mask[zslide_to_focus,:,:]
+    zslide_to_focus = np.int(mask.shape[0]/2)
+
+    image2D = image[zslide_to_focus,:,:]
+    mask2D = mask[zslide_to_focus,:,:]
  
 
     fil = FilFinder2D(image2D, mask=mask2D) #creates a class, add beamwith?!
@@ -329,15 +335,10 @@ def create_skeleton(image,mask, verbose=False):
     skeletonized_image=fil.skeleton_longpath
     [X,Y]=np.where(skeletonized_image==1)
 
-    if (verbose==True):
-        plt.figure()
-        plt.imshow(image2D, cmap='gray')
-        plt.contour(skeletonized_image, colors='r')
-        plt.axis('off')
-        plt.title('check skeleton')
-        plt.show()
+    if verbose:
+        stop = toc(start)
 
-    return X,Y
+    return X, Y
 
 def _arc_length(x, y):
     npts = len(x)
