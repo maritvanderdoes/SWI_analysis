@@ -55,7 +55,7 @@ n_workers = 7
 
 # Parameters in change
 sorting = False
-mm_th = 2.5 #2.5
+mm_th = 2.2 #2.5
 th_sel = 0.3
 krn_size = 2
 fill_holes = True

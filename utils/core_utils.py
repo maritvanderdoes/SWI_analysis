@@ -225,7 +225,7 @@ def calculate_worm_properties(img_binary, img_signal, verbose = False):
 
 # Adaptive masking
 def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
-    krn_type = 'Disk', exp_size = 1, fill_holes = True, z_threshold = 0.7, 
+    krn_type = 'Disk', exp_size = 3 fill_holes = True, z_threshold = 0.7, 
     sorting = False, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 

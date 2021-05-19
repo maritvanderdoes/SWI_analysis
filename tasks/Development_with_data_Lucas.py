@@ -56,7 +56,7 @@ n_workers = 6
 
 # Parameters in change
 sorting = False
-mm_th = 1.8 #2.5
+mm_th = 2.5 #2.5
 th_sel = 0.3
 krn_size = 2
 fill_holes = True
@@ -71,7 +71,7 @@ z_threshold = 0.6
 #save retults
 results = []
 current_res_df = []
-image = 4
+image = 3
 
 # list for all channels the stk files in folder
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
