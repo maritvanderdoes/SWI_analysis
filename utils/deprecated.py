@@ -340,6 +340,86 @@ def create_skeleton(image, mask, verbose=False):
 
     return X, Y
 
+def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
+
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.', end = " ")
+
+    # # check for sizes
+    # if np.ndim(img_binary)==2:
+    #     shapez = 1
+    #     shapex = img_binary.shape[0]
+    #     shapey = img_binary.shape[1]
+    # elif np.ndim(img_binary)==3:
+    #     shapez = img_binary.shape[0]
+    #     shapex = img_binary.shape[1]
+    #     shapey = img_binary.shape[2]
+
+    shapex = img_binary.shape[-2]
+    shapey = img_binary.shape[-1]
+    
+    # if verbose:
+    #     print("Number of z_planes: "+number_z)
+
+    # binary_to_test
+    # Define the points
+    grid_y, grid_x = np.meshgrid(np.arange(0,shapey),np.arange(0,shapex))
+
+    # Find the first line
+    points2mask = np.linspace(0,1,np.shape(X)[0])
+
+    # Find the upperline
+    upper = np.sum(points2mask<cut_th)
+    lower = np.sum(points2mask<(1-cut_th))
+
+    # Reference point
+    ref_up = X[upper]*dx[upper]+Y[upper]*dy[upper]
+    ref_low = X[lower]*dx[lower]+Y[lower]*dy[lower]
+
+    # define the upper points to be zero
+    fun_u = (grid_y*dy[upper]+grid_x*dx[upper])
+    fun_l = (grid_y*dy[lower]+grid_x*dx[lower])
+    binary_upper = fun_u>ref_up
+    binary_lower = fun_l<ref_low
+
+    #new image
+    binary_grid = binary_upper*binary_lower
+
+    # Final product
+    binary_new = binary_grid*img_binary
+    # if np.ndim(img_binary)==2:
+    #     binary_new = binary_grid*img_binary
+    # elif np.ndim(img_binary)==3:
+    #     binary_new = binary_grid[None,:,:]*img_binary
+
+
+    # plt.figure()
+    # plt.contour((fun_u)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_upper)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+    # plt.figure()
+    # plt.contour((fun_l)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_lower)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+
+    #adapt if it is 2D!!!
+    if verbose:
+        stop = toc(start)
+        
+    return binary_new
+
 def _arc_length(x, y):
     npts = len(x)
     arc = np.sqrt((x[1] - x[0])**2 + (y[1] - y[0])**2)

@@ -216,8 +216,9 @@ def calculate_worm_properties(img_binary, img_signal, verbose = False):
         # Debugging and benchmarking
         if verbose:
             stop = toc(start)
+
         print('Multiple areas are selected, segmentation not good.')
-        return (0,0)
+        return (np.nan, np.nan)
 
 #-----------------------------------------------------------------------------
 # Masking
@@ -723,7 +724,6 @@ def straighten_image2D_dual(images_to_be_straightened,X,Y,dx,dy,sampling_space=1
 
     return straightened_images, (xcoord, ycoord)
 
-
 def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
 
     # Debugging and benchmarking
@@ -731,32 +731,32 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
         start = tic()
         print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.', end = " ")
 
-    # # check for sizes
-    # if np.ndim(img_binary)==2:
-    #     shapez = 1
-    #     shapex = img_binary.shape[0]
-    #     shapey = img_binary.shape[1]
-    # elif np.ndim(img_binary)==3:
-    #     shapez = img_binary.shape[0]
-    #     shapex = img_binary.shape[1]
-    #     shapey = img_binary.shape[2]
-
     shapex = img_binary.shape[-2]
     shapey = img_binary.shape[-1]
-    
-    # if verbose:
-    #     print("Number of z_planes: "+number_z)
 
-    # binary_to_test
     # Define the points
     grid_y, grid_x = np.meshgrid(np.arange(0,shapey),np.arange(0,shapex))
 
     # Find the first line
     points2mask = np.linspace(0,1,np.shape(X)[0])
 
+    # Creating storing matrices
+    npoints = 21
+    adj_mat = np.zeros([npoints, shapex, shapey])
+    k_mat = np.zeros([shapex, shapey])
+
+    # Computing distances
+    for k, cut_ths in enumerate(np.linspace(0,1,npoints)):
+        point_ref = np.sum(points2mask<cut_ths)
+        adj_mat[k,:,:] = np.sqrt( (X[point_ref]-grid_x)**2+(Y[point_ref]-grid_y)**2)
+
+    # Computing the region of thresholds
+    val_mat = np.where(adj_mat == np.min(adj_mat,axis = 0))
+    k_mat[val_mat[1],val_mat[2]] = val_mat[0]/(npoints-1)
+
     # Find the upperline
-    upper = np.sum(points2mask<cut_th)
-    lower = np.sum(points2mask<(1-cut_th))
+    upper = np.sum(points2mask<=cut_th)
+    lower = np.sum(points2mask<=(1-cut_th))
 
     # Reference point
     ref_up = X[upper]*dx[upper]+Y[upper]*dy[upper]
@@ -765,11 +765,15 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
     # define the upper points to be zero
     fun_u = (grid_y*dy[upper]+grid_x*dx[upper])
     fun_l = (grid_y*dy[lower]+grid_x*dx[lower])
-    binary_upper = fun_u>ref_up
-    binary_lower = fun_l<ref_low
+    binary_upper = fun_u<ref_up
+    binary_lower = fun_l>ref_low
+
+    # Computing the new thresholded areas
+    final_upper = (1-((binary_upper).astype(int)*(k_mat<=cut_th).astype(int)))
+    final_lower = (1-((binary_lower).astype(int)*(k_mat>=(1-cut_th)).astype(int)))
 
     #new image
-    binary_grid = binary_upper*binary_lower
+    binary_grid = final_upper*final_lower
 
     # Final product
     binary_new = binary_grid*img_binary

@@ -87,6 +87,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     axs[1].set_ylabel('Threshold value')
     if foldername != []:
         plt.savefig(foldername+'\Masking_Intensity_range.png')
+        plt.close(fig)
 
     # SORTED distribution
     plt.figure()
@@ -95,6 +96,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     plt.ylabel('Z-plane')
     if foldername != []:
         plt.savefig(foldername+'\Masking_Sorted_Distribution.png')
+        plt.close(fig)
 
     # Examples
     fig, axs = plt.subplots(1,3)
@@ -116,8 +118,9 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     #axs[2].set_ylim([np.min(sorted_values[:,-1,0]), np.max(sorted_values[:,-1,0])])
     if foldername != []:
         plt.savefig(foldername+'\Masking_Pixel_intensities.png')
+        plt.close(fig)
 
-    plt.figure()
+    fig = plt.figure()
     plt.plot(area_zplane)
     plt.xlabel('Z plane')
     plt.ylabel('Number of pixels')
@@ -125,6 +128,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     plt.grid()
     if foldername != []:
         plt.savefig(foldername+'\Masking_Area_of_mask_per_zplane.png')
+        plt.close(fig)
 
 #-----------------------------------------------------------------------------
 # Validating synthetic datasets
