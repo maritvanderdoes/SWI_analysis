@@ -729,7 +729,7 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
     # Debugging and benchmarking
     if verbose:
         start = tic()
-        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.', end = " ")
+        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.')
 
     shapex = img_binary.shape[-2]
     shapey = img_binary.shape[-1]
@@ -753,6 +753,12 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
     # Computing the region of thresholds
     val_mat = np.where(adj_mat == np.min(adj_mat,axis = 0))
     k_mat[val_mat[1],val_mat[2]] = val_mat[0]/(npoints-1)
+
+    
+    if verbose:
+        print('Computing the domains.', end = " ")
+        stop = toc(start)
+        start = tic()
 
     # Find the upperline
     upper = np.sum(points2mask<=cut_th)
@@ -804,6 +810,7 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
 
     #adapt if it is 2D!!!
     if verbose:
+        print('Computing the derivative domains.', end = " ")
         stop = toc(start)
         
     return binary_new

@@ -55,7 +55,7 @@ n_workers = 7
 
 # Parameters in change
 sorting = False
-mm_th = 1.8 #2.5
+mm_th = 2.5 #2.5
 th_sel = 0.3
 krn_size = 2
 fill_holes = True
@@ -339,6 +339,17 @@ def main_function(list_mcherry,list_GFP):
             axs[1].imshow(straightened_image, cmap='gray', vmin = vmin_val)
             axs[1].set_title("Straightened image")
             fig.savefig(foldername+'\A51_Straightened_image.png')
+            plt.close(fig)
+
+            fig, axs = plt.subplots(2,1)   
+            axs[0].plot(np.sum(straightened_image,axis = 1))
+            axs[0].set_title("Projection over length")
+            axs[0].set_ylabel('Intensity')
+            axs[1].plot(np.sum(straightened_image,axis = 1)/np.sum(straightened_binary, axis = 1))
+            axs[1].set_title("Mean projection over length")
+            axs[1].set_xlabel('Length')
+            axs[1].set_ylabel('Mean Intensity')
+            fig.savefig(foldername+'\A52_Projection_over_length.png')
             plt.close(fig)
 
             stop = toc(start)
