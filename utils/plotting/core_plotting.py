@@ -86,7 +86,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     axs[1].set_xlabel('Pixel index')
     axs[1].set_ylabel('Threshold value')
     if foldername != []:
-        plt.savefig(foldername+'\Masking_Intensity_range.png')
+        plt.savefig(foldername+'/Masking_Intensity_range.png')
         plt.close(fig)
 
     # SORTED distribution
@@ -95,7 +95,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     plt.xlabel('Pixel index')
     plt.ylabel('Z-plane')
     if foldername != []:
-        plt.savefig(foldername+'\Masking_Sorted_Distribution.png')
+        plt.savefig(foldername+'/Masking_Sorted_Distribution.png')
         plt.close(fig)
 
     # Examples
@@ -117,7 +117,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     axs[2].set_title('Lowest pixel')
     #axs[2].set_ylim([np.min(sorted_values[:,-1,0]), np.max(sorted_values[:,-1,0])])
     if foldername != []:
-        plt.savefig(foldername+'\Masking_Pixel_intensities.png')
+        plt.savefig(foldername+'/Masking_Pixel_intensities.png')
         plt.close(fig)
 
     fig = plt.figure()
@@ -127,7 +127,7 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     plt.title('Area of mask per z-plane')
     plt.grid()
     if foldername != []:
-        plt.savefig(foldername+'\Masking_Area_of_mask_per_zplane.png')
+        plt.savefig(foldername+'/Masking_Area_of_mask_per_zplane.png')
         plt.close(fig)
 
 #-----------------------------------------------------------------------------

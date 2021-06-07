@@ -92,9 +92,9 @@ def main_function(list_mcherry,list_GFP):
     if debugging:
         # Creating the folder for the worm
         if sngpln:
-            foldername = outputpath+'\Single_Plane_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']
+            foldername = outputpath+'/Single_Plane_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']
         else:
-            foldername = outputpath+'\Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']
+            foldername = outputpath+'/Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']
         # Creating the individual debugging folder
         if not os.path.exists(foldername):
             print('MAIN: Creating debugging folder.')
@@ -257,7 +257,7 @@ def main_function(list_mcherry,list_GFP):
             dwncoord = np.linspace(0,img_dim[0]-1,20).astype(int)
 
             # Saving status
-            with open(foldername+'\A00_Status.txt', 'w') as f:
+            with open(foldername+'/A00_Status.txt', 'w') as f:
                 f.write(status + ', with time of '+ str(np.round(stop_alg,2)) + ' (seconds)')
 
             # Presenting masking outputs
@@ -265,14 +265,14 @@ def main_function(list_mcherry,list_GFP):
                 mm_th = mm_th, scale = 'log', foldername = foldername)
 
             # Saving Mask
-            imsave(foldername+'\A10_Mask'+'.tiff',np.float32(255*img_binary), check_contrast = False)
+            imsave(foldername+'/A10_Mask'+'.tiff',np.float32(255*img_binary), check_contrast = False)
             # Saving Masked Data
-            imsave(foldername+'\A11_Masked_data'+'.tiff',np.float32(img_overlay), check_contrast = False)
+            imsave(foldername+'/A11_Masked_data'+'.tiff',np.float32(img_overlay), check_contrast = False)
             
             # Saving Cropped Mask
-            imsave(foldername+'\A20_Cropped_mask'+'.tiff',np.float32(cropped_binary), check_contrast = False)
+            imsave(foldername+'/A20_Cropped_mask'+'.tiff',np.float32(cropped_binary), check_contrast = False)
             # Saving Cropped Data
-            imsave(foldername+'\A21_Cropped_data'+'.tiff',np.float32(cropped_image), check_contrast = False)
+            imsave(foldername+'/A21_Cropped_data'+'.tiff',np.float32(cropped_image), check_contrast = False)
             
             # Saving the skeleton
             fig = plt.figure()
@@ -284,7 +284,7 @@ def main_function(list_mcherry,list_GFP):
                 plt.plot(Xinput,Yinput,'r.')
             plt.axis('off')
             plt.title('Old Skeleton')
-            plt.savefig(foldername+'\A30_Pre_Skeleton.png')
+            plt.savefig(foldername+'/A30_Pre_Skeleton.png')
             plt.close(fig)
 
             # Saving the new skeleton
@@ -297,7 +297,7 @@ def main_function(list_mcherry,list_GFP):
                 plt.plot(X, Y, 'r.')
             plt.axis('off')
             plt.title('New Skeleton')
-            plt.savefig(foldername+'\A31_Post_Skeleton.png')
+            plt.savefig(foldername+'/A31_Post_Skeleton.png')
             plt.close(fig)
 
             # Saving the cut mask
@@ -308,7 +308,7 @@ def main_function(list_mcherry,list_GFP):
                 plt.imshow(np.max(cropped_binary_ht,0).T,cmap='gray')
             plt.title('Reduced length by '+str(0.2*100)+"%")
             plt.axis('off')
-            plt.savefig(foldername+'\A40_Reduced_worm.png')
+            plt.savefig(foldername+'/A40_Reduced_worm.png')
             plt.close(fig)
 
             fig, axs = plt.subplots(1,2)   
@@ -323,7 +323,7 @@ def main_function(list_mcherry,list_GFP):
             axs[0].set_title("Original mask with sampling")
             axs[1].imshow(straightened_binary, cmap='gray')
             axs[1].set_title("Straightened mask")
-            fig.savefig(foldername+'\A50_Straightened_mask.png')
+            fig.savefig(foldername+'/A50_Straightened_mask.png')
             plt.close(fig)
 
             fig, axs = plt.subplots(1,2)   
@@ -338,7 +338,7 @@ def main_function(list_mcherry,list_GFP):
             axs[0].set_title("Original image with sampling")
             axs[1].imshow(straightened_image, cmap='gray', vmin = vmin_val)
             axs[1].set_title("Straightened image")
-            fig.savefig(foldername+'\A51_Straightened_image.png')
+            fig.savefig(foldername+'/A51_Straightened_image.png')
             plt.close(fig)
 
             fig, axs = plt.subplots(2,1)   
@@ -349,7 +349,7 @@ def main_function(list_mcherry,list_GFP):
             axs[1].set_title("Mean projection over length")
             axs[1].set_xlabel('Length')
             axs[1].set_ylabel('Mean Intensity')
-            fig.savefig(foldername+'\A52_Projection_over_length.png')
+            fig.savefig(foldername+'/A52_Projection_over_length.png')
             plt.close(fig)
 
             stop = toc(start)
@@ -358,7 +358,7 @@ def main_function(list_mcherry,list_GFP):
             print('MAIN: Some graphs have not been saved.')
 
             # Saving status
-            with open(foldername+'\A00_Status.txt', 'a') as f:
+            with open(foldername+'/A00_Status.txt', 'a') as f:
                 f.write('\n')
                 f.write('There are some issues saving.')
 

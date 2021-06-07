@@ -40,7 +40,7 @@ from _parameters import data_format, verbosity, debugging
 from _parameters import xdim, ydim, zdim
 
 # Coding parameters
-steps = 'Complete'
+steps = 'Masking'
 
 # Other coding parameters
 svngtm = False # Saving a temporal file
@@ -57,6 +57,12 @@ image = 0
 # list for all channels the stk files in folder
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
 #print(list_mcherry)
+
+foldername = outputpath+'/Debug_Logs'
+# Creating the individual debugging folder
+if not os.path.exists(foldername):
+    print('MAIN: Creating debugging folder.')
+    os.makedirs(foldername)
 
 #%% define the main function
 def main_function(list_mcherry,list_GFP):
@@ -85,6 +91,10 @@ def main_function(list_mcherry,list_GFP):
                 adaptive_masking(img_mcherry)
             
             status = 'Masked Image'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+
             if steps == 'Masking':
                 break
 
@@ -94,6 +104,10 @@ def main_function(list_mcherry,list_GFP):
                 crop_image(img_binary, img_gfp)
 
             status = 'Cropped Image'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
 
             # Calculating curved worms properties 
             (mean_curved, volume_curved) = \
@@ -104,6 +118,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['volume_curved'] = volume_curved/(xdim*ydim*zdim)
             
             status = 'Cropped Image (Comp)'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Cropping':
                 break
 
@@ -111,15 +129,27 @@ def main_function(list_mcherry,list_GFP):
             print('MAIN: Skeletonisation and Spline.')
             Xinput, Yinput = create_skeleton(cropped_image, cropped_binary)
             status = 'Skeleton created'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             
             # Spline fitting
             X, Y, dx, dy = create_spline(Xinput, Yinput)
             status = 'Spline created'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
 
             # Cutting off head and tail
             print('MAIN: Head to tail.')
             cropped_binary_ht = head2tail_masking(X,Y,dx,dy,cropped_binary,cut_th=0.2)
             status = 'Cut worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             
             # Calculating properties
             (mean_curved_ht, volume_curved_ht) = calculate_worm_properties(cropped_binary_ht, cropped_image)
@@ -133,6 +163,10 @@ def main_function(list_mcherry,list_GFP):
             max_image = np.max(cropped_image,0)
 
             status = 'Cut worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Skeletonisation':
                 break
 
@@ -144,6 +178,10 @@ def main_function(list_mcherry,list_GFP):
             (straightened_image, straightened_binary), (xcoord, ycoord) = \
                 straighten_image2D_dual((max_image, max_binary), X, Y, dx, dy, width_worm = int(length/10))
             status = 'Straightened worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
 
             # Calculating intensity straightened worm
             (mean_straightened, volume_straightened) = calculate_worm_properties(straightened_binary,straightened_image)
@@ -153,6 +191,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['area_straightened'] = volume_straightened/(xdim*ydim)
 
             status = 'Straightened worm (Comp)'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Straightening':
                 break
 
@@ -168,6 +210,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['area_straightened_ht'] = volume_traightened_ht
 
             status = 'Cut straightened'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Cutting_Straightened':
                 break
         
@@ -182,14 +228,20 @@ def main_function(list_mcherry,list_GFP):
 
     except:
         print('MAIN: Some computations have not finished.')
+        
         status = status+' (after error)'
+        os.remove(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt')
+        # Saving status
+        with open(foldername+'/ERROR_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+            f.write(status)
 
     stop_alg = toc(start0)
 
     # Saving temporal files
     if debugging:
+        os.remove(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt')
         # Saving status
-        with open(foldername+'/Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+        with open(foldername+'/COMPLETED_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
             f.write(status + ', with time of '+ str(np.round(stop_alg,2)) + ' (seconds)')
 
  

@@ -147,7 +147,7 @@ def image_lists(directory, channel1, channel2 = None, channel3 = None):
 
 #-----------------------------------------------------------------------------
 # Calculating worm properties
-def crop_image(img_binary, img_signal, verbose = False):
+def crop_image(img_binary, img_signal):
     """crop worm is a function that gets a cropped image of the biggest
     segmented region in the image.
 
@@ -160,24 +160,19 @@ def crop_image(img_binary, img_signal, verbose = False):
         cropped_binary (3D arary): [description]
     """
 
-    # Debugging and benchmarking
-    if verbose:
-        start = tic()
-        print('Cropping mask. Verbose mode.', end = " ")
-
+    
     ccs, num_ccs = label(img_binary) #set labels in binary image
     properties=regionprops(ccs,img_signal,['area']) #calculates the properties of the different areas
-    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
 
-    cropped_binary=best_region.image
-    cropped_image=best_region.intensity_image
+    if (len(properties)==0):
+        cropped_binary=img_binary
+        cropped_image=img_signal
+    else:
+        best_region = max(properties, key=lambda region: region.area) #selects the biggest region
+        cropped_binary=best_region.image
+        cropped_image=best_region.intensity_image
 
-    # Debugging and benchmarking
-    if verbose:
-        stop = toc(start)
-
-    return cropped_binary, cropped_image 
-
+    return cropped_binary,cropped_image
 
 def calculate_worm_properties(img_binary, img_signal, verbose = False):
     """calculate worm properties is a function that calculate the area of the segmented area
@@ -225,7 +220,7 @@ def calculate_worm_properties(img_binary, img_signal, verbose = False):
 
 # Adaptive masking
 def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
-    krn_type = 'Disk', exp_size = 3 fill_holes = True, z_threshold = 0.7, 
+    krn_type = 'Disk', exp_size = 3, fill_holes = True, z_threshold = 0.7, 
     sorting = False, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 

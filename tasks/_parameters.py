@@ -27,7 +27,10 @@ import os
 #%% Finding directories
 # Default working directories
 # Lucas
-Lucas_path = 'C:/Users/moraluca/Desktop/Lin28_test'
+#Lucas_path = 'C:/Users/moraluca/Desktop/Lin28_test'
+# Lucas_path = 'W:/nobackup/ggrossha/moraluca/SWI_analysis/docs'
+#Lucas_path = '/tungstenfs/nobackup/ggrossha/moraluca/SWI_analysis/Lin28_test'
+Lucas_path = '/tungstenfs/scratch/ggrossha/Lucas/Live_Imaging/LJ_Lin28_Project_210116'
 Lucas_data_format = 'ts'
 Lucas_verbose = True
 Lucas_debugging = True
@@ -69,10 +72,19 @@ else:
     print('Folder output has been created')
     os.makedirs(os.path.abspath(os.path.join(dirpath,'Output')))
 
+
+if debugging:
+    foldername = outputpath+'/Debug_Logs'
+    # Creating the individual debugging folder
+    if not os.path.exists(foldername):
+        print('MAIN: Creating debugging folder.')
+        os.makedirs(foldername)
+
 # Printing additional info
 print('Selected data_format: ' + data_format)
 print('Verbosity mode: ' + str(verbosity))
 print('Debugging mode: ' + str(debugging))
+print('Output directory: ' + str(outputpath))
 
 #%% Defining channels
 channel_GFP =   'w1Lucas-sim-488-561'
@@ -82,6 +94,9 @@ channel_mcherry= 'w2Lucas-sim-561-488'
 xdim = 0.533
 ydim = 0.533
 zdim = 2
+
+#%% Other settings
+
 
 #%% Numerical Parameters
 # Min/Max threshold

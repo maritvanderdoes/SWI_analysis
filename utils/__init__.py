@@ -25,6 +25,8 @@ from utils.core_utils import straighten_image2D_dual
 from utils.benchmarking import tic
 from utils.benchmarking import toc
 from utils.benchmarking import downscaling
+from utils.benchmarking import timeout
+from utils.benchmarking import raise_timeout
 
 # Depecreted
 from utils.deprecated import read_image

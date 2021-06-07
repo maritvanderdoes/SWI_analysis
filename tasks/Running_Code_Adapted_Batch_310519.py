@@ -29,6 +29,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import multiprocessing
+import time
 import os
 
 # Saving the mask
@@ -48,6 +49,7 @@ svngtm = False # Saving a temporal file
 # Setting the parallel mode
 parallel = True
 n_workers = 12
+batch_size = 500
 
 #save retults
 results = []
@@ -57,6 +59,19 @@ image = 0
 # list for all channels the stk files in folder
 (list_mcherry, list_GFP) = image_lists(dirpath, channel_mcherry, channel_GFP)
 #print(list_mcherry)
+
+# Scramble
+dim = np.shape(list_mcherry)
+permutation_array = np.arange(0, dim[0])
+permutation_array = np.random.permutation(permutation_array)
+list_mcherry = [list_mcherry[k] for k in permutation_array]
+list_GFP = [list_GFP[k] for k in permutation_array]
+
+foldername = outputpath+'/Debug_Logs'
+# Creating the individual debugging folder
+if not os.path.exists(foldername):
+    print('MAIN: Creating debugging folder.')
+    os.makedirs(foldername)
 
 #%% define the main function
 def main_function(list_mcherry,list_GFP):
@@ -82,9 +97,22 @@ def main_function(list_mcherry,list_GFP):
             # Create mask
             print('MAIN: Adaptive Masking')
             img_binary, additional_outputs  = \
-                adaptive_masking(img_mcherry)
+                adaptive_masking(img_mcherry, exp_size = 5)
             
             status = 'Masked Image'
+
+            # Calculating curved worms properties 
+            (mean_curved, volume_curved) = \
+                calculate_worm_properties(img_binary, img_gfp)
+            
+            # Storing the properties in current results
+            current_res['mean_curved'] = mean_curved  #calculate volume
+            current_res['volume_curved'] = volume_curved/(xdim*ydim*zdim)
+            
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+
             if steps == 'Masking':
                 break
 
@@ -94,6 +122,21 @@ def main_function(list_mcherry,list_GFP):
                 crop_image(img_binary, img_gfp)
 
             status = 'Cropped Image'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+
+            if True:
+                print('Select single plane')
+                area_cropped = np.sum(np.sum(cropped_binary,axis=2),axis = 1)
+                best_plane = np.where(area_cropped == np.max(area_cropped))[0][0]
+                # Selecting the frame
+                cropped_binary = cropped_binary[best_plane,:,:]
+                cropped_image = cropped_image[best_plane,:,:]
+                # Reshaping
+                cropped_binary = cropped_binary[None,:,:]
+                cropped_image = cropped_image[None,:,:]
+                
 
             # Calculating curved worms properties 
             (mean_curved, volume_curved) = \
@@ -104,6 +147,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['volume_curved'] = volume_curved/(xdim*ydim*zdim)
             
             status = 'Cropped Image (Comp)'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Cropping':
                 break
 
@@ -111,15 +158,27 @@ def main_function(list_mcherry,list_GFP):
             print('MAIN: Skeletonisation and Spline.')
             Xinput, Yinput = create_skeleton(cropped_image, cropped_binary)
             status = 'Skeleton created'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             
             # Spline fitting
             X, Y, dx, dy = create_spline(Xinput, Yinput)
             status = 'Spline created'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
 
             # Cutting off head and tail
             print('MAIN: Head to tail.')
             cropped_binary_ht = head2tail_masking(X,Y,dx,dy,cropped_binary,cut_th=0.2)
             status = 'Cut worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             
             # Calculating properties
             (mean_curved_ht, volume_curved_ht) = calculate_worm_properties(cropped_binary_ht, cropped_image)
@@ -133,6 +192,10 @@ def main_function(list_mcherry,list_GFP):
             max_image = np.max(cropped_image,0)
 
             status = 'Cut worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Skeletonisation':
                 break
 
@@ -144,6 +207,10 @@ def main_function(list_mcherry,list_GFP):
             (straightened_image, straightened_binary), (xcoord, ycoord) = \
                 straighten_image2D_dual((max_image, max_binary), X, Y, dx, dy, width_worm = int(length/10))
             status = 'Straightened worm'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
 
             # Calculating intensity straightened worm
             (mean_straightened, volume_straightened) = calculate_worm_properties(straightened_binary,straightened_image)
@@ -153,6 +220,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['area_straightened'] = volume_straightened/(xdim*ydim)
 
             status = 'Straightened worm (Comp)'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Straightening':
                 break
 
@@ -168,6 +239,10 @@ def main_function(list_mcherry,list_GFP):
             current_res['area_straightened_ht'] = volume_traightened_ht
 
             status = 'Cut straightened'
+            # Saving status
+            with open(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+                f.write(status)
+                
             if steps == 'Cutting_Straightened':
                 break
         
@@ -182,14 +257,23 @@ def main_function(list_mcherry,list_GFP):
 
     except:
         print('MAIN: Some computations have not finished.')
+        
         status = status+' (after error)'
+        os.remove(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt')
+        # Saving status
+        with open(foldername+'/ERROR_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+            f.write(status)
 
     stop_alg = toc(start0)
 
     # Saving temporal files
     if debugging:
+        try:
+            os.remove(foldername+'/RUNNING_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt')
+        except:
+            print('Error in removing folder')
         # Saving status
-        with open(foldername+'/Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
+        with open(foldername+'/COMPLETED_Sample'+'_t'+current_res['Frame']+'_s'+current_res['Position']+'_Status.txt', 'w') as f:
             f.write(status + ', with time of '+ str(np.round(stop_alg,2)) + ' (seconds)')
 
  
@@ -203,13 +287,44 @@ def main_function(list_mcherry,list_GFP):
 
 
 #%%
-if parallel:
+if parallel:        
     print('MAIN: Running in Parallel mode. Make sure you are running this in the terminal.')
+    n_samples = len(list_mcherry)
+    n_batches = int(np.ceil(n_samples/batch_size))
     start_parallel = tic()
-    if __name__=='__main__':
-        p = multiprocessing.Pool(n_workers)
-        results = p.starmap(main_function,zip(list_mcherry,list_GFP))
-        p.close()
+
+    for batch_sel in np.arange(0,n_batches):
+        print('MAIN: Running batch '+ str(batch_sel) + ' out of '+ str(n_batches))
+        #batch_pos = np.arange(batch_sel*batch_size,(batch_sel+1)*batch_size)
+        if batch_sel == n_batches-1:
+            batch_mcherry = list_mcherry[batch_sel*batch_size:]
+            batch_GFP = list_GFP[batch_sel*batch_size:]
+        else:
+            batch_mcherry = list_mcherry[batch_sel*batch_size:(batch_sel+1)*batch_size]
+            batch_GFP = list_GFP[batch_sel*batch_size:(batch_sel+1)*batch_size]
+        
+        start_batch = tic()
+        if __name__=='__main__':
+            p = multiprocessing.Pool(n_workers)
+            results = p.starmap(main_function,zip(batch_mcherry,batch_GFP))
+            p.close()
+            p.join()
+            
+
+            #time.sleep(10)
+            #p.terminate()
+            #print('TIMEOUT.', end = ' ')
+
+        print('Batch finished. ', end = ' ')
+        stop = toc(start_parallel)
+        
+        # Saving batch
+        df = pd.DataFrame(results)
+        df.to_csv(outputpath+'/Results_batch_'+str(batch_sel)+'_'+str(n_batches)+'.csv', index = False)
+
+        print('Pause of 5 min')
+        time.sleep(300)
+
     print('Parallel code finished. ', end = ' ')
     stop = toc(start_parallel)
 
@@ -226,9 +341,9 @@ else:
             results.append(current_res)
 
 
-#%% Saving results
-df = pd.DataFrame(results)
-df.to_csv(outputpath+'/Results.csv', index = False)
+# #%% Saving results
+# df = pd.DataFrame(results)
+# df.to_csv(outputpath+'/Results.csv', index = False)
 
 #%% To run the code
 # Additional notes
@@ -239,5 +354,5 @@ df.to_csv(outputpath+'/Results.csv', index = False)
 # conda activate SWI
 # pip install -e .
 #
-# python tasks/Running_Code_Adapted_210519.py
+# python tasks/Running_Code_Adapted_Batch_310519.py
 
