@@ -66,7 +66,7 @@ def plotzslides(zslides,img1,img2,img3,title = 'Comparison'):
     plt.tight_layout()
 
 # Summary masking
-def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm_th = 1.8, scale = 'log'):
+def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm_th = 1.8, scale = 'log', foldername = []):
     # Ordered pixels
     fig, axs = plt.subplots(2, 1, sharex = True)   
     if scale == 'log':
@@ -85,12 +85,18 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
         axs[1].plot(pixel_threshold,'r')
     axs[1].set_xlabel('Pixel index')
     axs[1].set_ylabel('Threshold value')
+    if foldername != []:
+        plt.savefig(foldername+'/Masking_Intensity_range.png')
+        plt.close(fig)
 
     # SORTED distribution
     plt.figure()
     plt.imshow(sorted_values[:,:,0],aspect='auto')
     plt.xlabel('Pixel index')
     plt.ylabel('Z-plane')
+    if foldername != []:
+        plt.savefig(foldername+'/Masking_Sorted_Distribution.png')
+        plt.close(fig)
 
     # Examples
     fig, axs = plt.subplots(1,3)
@@ -110,13 +116,19 @@ def masking_summary(sorted_values, pixel_threshold, pixel_range, area_zplane, mm
     axs[2].set_xlabel('Z plane')
     axs[2].set_title('Lowest pixel')
     #axs[2].set_ylim([np.min(sorted_values[:,-1,0]), np.max(sorted_values[:,-1,0])])
+    if foldername != []:
+        plt.savefig(foldername+'/Masking_Pixel_intensities.png')
+        plt.close(fig)
 
-    plt.figure()
+    fig = plt.figure()
     plt.plot(area_zplane)
     plt.xlabel('Z plane')
     plt.ylabel('Number of pixels')
     plt.title('Area of mask per z-plane')
     plt.grid()
+    if foldername != []:
+        plt.savefig(foldername+'/Masking_Area_of_mask_per_zplane.png')
+        plt.close(fig)
 
 #-----------------------------------------------------------------------------
 # Validating synthetic datasets

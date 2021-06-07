@@ -1,5 +1,7 @@
 import timeit
 import numpy as np
+import signal
+from contextlib import contextmanager
 
 def tic():
     '''
@@ -88,3 +90,24 @@ def downscaling(images, xy_factor = 2, z0 = None, zf = None, verbose = False):
             print('*Assuming identical size')
 
     return downscaled_images
+
+#%% Generating timeout function
+
+@contextmanager
+def timeout(time):
+    # Register a function to raise a TimeoutError on the signal.
+    signal.signal(signal.SIGALRM, raise_timeout)
+    # Schedule the signal to be sent after ``time``.
+    signal.alarm(time)
+
+    try:
+        yield
+    except TimeoutError:
+        pass
+    finally:
+        # Unregister the signal so it won't be triggered
+        # if the timeout is not reached.
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+
+def raise_timeout(signum, frame):
+    raise TimeoutError

@@ -2,18 +2,35 @@
 # -*- coding: utf-8 -*-
 
 # Importing required libraries
-import skimage.filters as skf
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
 import glob
 import os
 import re
+import networkx as nx
+from fil_finder import FilFinder2D
+import astropy.units as u
+
+
 from skimage import io
-from scipy.ndimage.measurements import label 
-from skimage.measure import regionprops
-import scipy.ndimage.morphology as scimorph
+import skimage.filters as skf
 import skimage.morphology as skimorph
+from skimage.morphology import skeletonize
+
+from skimage.measure import regionprops
+
+from scipy.ndimage.measurements import label 
+import scipy.ndimage.morphology as scimorph
+
+from scipy import interpolate
+
+from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import KNeighborsRegressor
+
+from utils.benchmarking import tic,toc
+
+
 
 #-----------------------------------------------------------------------------
 # Loading Datasets
@@ -130,47 +147,80 @@ def image_lists(directory, channel1, channel2 = None, channel3 = None):
 
 #-----------------------------------------------------------------------------
 # Calculating worm properties
-def calculate_worm_properties(img_binary, img_signal):
-    '''
-    worm_proprties_output is a function that  calculates different properties 
-    (area, mean_intensity, min_intensity) of the signal images, based on the 
-    biggest segmented area in the binary image
+def crop_image(img_binary, img_signal):
+    """crop worm is a function that gets a cropped image of the biggest
+    segmented region in the image.
 
-    Parameters
-    ----------
-    img_binary : binary image
-    img_signal : signal image
+    Args:
+        img_binary (3D array): [description]
+        img_signal (3D array): [description]
 
-    Returns
-    -------
-    binary_image : image that only contains the best area
-    area         : area of the best area
-    mean_intensity: mean intensity of the signal image in the best area
-    min_intensity: minimum intensity of the signal image in the best area
+    Returns:
+        cropped_image (3D arary): [description]
+        cropped_binary (3D arary): [description]
+    """
 
-    '''
     
-    #select biggest area
     ccs, num_ccs = label(img_binary) #set labels in binary image
-    properties=regionprops(ccs,img_signal,['area','mean_intensity','min_intensity']) #calculates the properties of the different areas
-    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
-    
-    binary_image= (ccs == best_region.label).astype(np.uint8)
-    min_intensity=best_region.min_intensity
-    mean_intensity=best_region.mean_intensity
-    area=best_region.area
-    centroid = best_region.centroid
+    properties=regionprops(ccs,img_signal,['area']) #calculates the properties of the different areas
 
-    metrics = (area, mean_intensity, min_intensity, centroid)
+    if (len(properties)==0):
+        cropped_binary=img_binary
+        cropped_image=img_signal
+    else:
+        best_region = max(properties, key=lambda region: region.area) #selects the biggest region
+        cropped_binary=best_region.image
+        cropped_image=best_region.intensity_image
+
+    return cropped_binary,cropped_image
+
+def calculate_worm_properties(img_binary, img_signal, verbose = False):
+    """calculate worm properties is a function that calculate the area of the segmented area
+    in the binary image, and calculate the mean intensity of this segmented area in the image signal.
+    This mean intensity is substracted by the minimum intensity as background substraction
+
+    Args:
+        img_binary (3D array): [description]
+        img_signal (3D array): [description]
+
+    Returns:
+        mean_intensity: [description]
+        volume        : 
+    """
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Calculating worm properties. Verbose mode.', end = " ")
+
+    ccs, num_ccs = label(img_binary) #set labels in binary image
+
+    if (num_ccs==1):
+        properties=regionprops(ccs,img_signal,['area','mean_intensity','min_intensity'])
+ 
+        min_intensity=properties[0].min_intensity
+        mean_intensity=properties[0].mean_intensity-properties[0].min_intensity
+        volume=properties[0].area
+
+        # Debugging and benchmarking
+        if verbose:
+            stop = toc(start)
+
+        return (mean_intensity, volume)
     
-    return binary_image, metrics
+    else:
+        # Debugging and benchmarking
+        if verbose:
+            stop = toc(start)
+
+        print('Multiple areas are selected, segmentation not good.')
+        return (np.nan, np.nan)
 
 #-----------------------------------------------------------------------------
 # Masking
 
 # Adaptive masking
 def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
-    krn_type = 'Disk', exp_size = 1, fill_holes = True, z_threshold = 0.7, 
+    krn_type = 'Disk', exp_size = 3, fill_holes = True, z_threshold = 0.7, 
     sorting = False, verbose = False):
     """
     adaptive_masking is a function that takes a 3D image (z,x,y) and it 
@@ -238,7 +288,6 @@ def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
     """
     # Debugging and benchmarking
     if verbose:
-        from utils.benchmarking import tic,toc
         start0 = tic()
         print('Adaptive masking. Verbose mode')
 
@@ -398,6 +447,7 @@ def _mask_postprocessing(input_mask, krn_size = 1, krn_type = 'Disk', exp_size =
     return input_mask
 
 def _mask_refinement(input_mask, z_threshold = 0.2):
+
     """
     Processes a binary mask to:
         - Removing z planes that do present areas below a threshold.
@@ -433,3 +483,337 @@ def _mask_refinement(input_mask, z_threshold = 0.2):
     area_zplane = np.sum(np.sum(output_mask,axis=2),axis = 1)
 
     return output_mask, area_zplane
+
+#------------------------------------------------------------------------------
+# straightening
+
+
+def create_skeleton(mask, verbose=False):
+    """[summary]
+
+    Args:
+        mask (3D image): 3D binary image/mask of the worm
+        verbose (bool, optional): When verbose is true, it plots the skeleton in red over the masked image. Defaults to False.
+
+    Returns:
+        X: unsorted x coordinates of skeleton
+        Y: unsorted y coordinates of skeleton
+    """
+    zslide_to_focus=np.int(mask.shape[0]/2)
+
+    image=mask[zslide_to_focus,:,:]
+    skeletonized_image=skeletonize(image)
+    [X,Y]=np.where(skeletonized_image==1)
+    
+    if (verbose==True):
+        plt.figure()
+        plt.imshow(image, cmap='gray')
+        plt.contour(skeletonized_image, colors='r')
+        plt.axis('off')
+        plt.title('check skeleton')
+        plt.show()
+    
+    return X,Y
+
+def create_spline(X,Y, sampling_space=1 , s=100, k=3, n_neighbors = 2, verbose=False):
+    """Creates a spline through the X and Y coordinates by a number of splinepoints.
+    This gives as output the rescaled x and y, and the derivatives of the line.
+    Idea explained from 
+    https://stackoverflow.com/questions/37742358/sorting-points-to-form-a-continuous-line
+
+    Args:
+        X ([1D array]): xcoordinates through with spline need to be splitted
+        Y ([1D array]): ycoordinates through with spline need to be splitted
+        verbose (bool, optional): [description]. Defaults to False.
+
+    Returns:
+        x_new: 
+        y_new:
+        dx:
+        dy:
+    """
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Creating spline. Verbose mode.', end = " ")
+
+    #variables
+    nsplinepoints=int(X.shape[0]/sampling_space)
+    inputarray = np.c_[X, Y]
+
+    # runs a nearest neighbors algorithm on the coordinate array
+    clf = NearestNeighbors(n_neighbors=n_neighbors).fit(inputarray)
+    G = clf.kneighbors_graph()
+    T = nx.from_scipy_sparse_matrix(G)
+
+    # sorts coordinates according to their nearest neighbors order
+    order = list(nx.dfs_preorder_nodes(T, 0))
+    xx = X[order]
+    yy = Y[order]
+
+    # Loops over all points in the coordinate array as origin, determining which results in the shortest path
+    paths = [list(nx.dfs_preorder_nodes(T, i)) for i in range(len(inputarray))]
+    mindist = np.inf
+    minidx = 0
+
+    for i in range(len(inputarray)):
+        p = paths[i]           # order of nodes
+        ordered = inputarray[p]    # ordered nodes
+        # find cost of that order by the sum of euclidean distances between points (i) and (i+1)
+        cost = (((ordered[:-1] - ordered[1:])**2).sum(1)).sum()
+        #print(cost)
+        if cost < mindist:
+            mindist = cost
+            minidx = i
+
+    opt_order = paths[minidx]
+
+    xxx = X[opt_order]
+    yyy = Y[opt_order]
+
+    # plt.figure()
+    # plt.plot(xxx,yyy)
+    # plt.show()
+
+    # fits a spline to the ordered coordinates
+    tckp, u = interpolate.splprep([xxx, yyy], s = s, k = k) #s = smoothing is 100, nest=-1
+    x_new, y_new = interpolate.splev(np.linspace(0,1,nsplinepoints), tckp)
+    dx, dy = interpolate.splev(np.linspace(0,1,nsplinepoints), tckp,der=1)
+
+    #calculating normalized derivative points
+    magnitude=np.sqrt(dx**2+dy**2)
+    dx=dx/magnitude
+    dy=dy/magnitude
+
+    if verbose:
+        stop = toc(start)
+
+    return x_new, y_new, dx, dy
+
+def straighten_image3D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1, verbose=False):
+    """
+    streighten the image based on the spline and the derivatives of the spline.
+    Goes over the z stack, and applies this 2D spline on the whole image.
+
+    Args:
+        image_to_be_straighten ([type]): [description]
+        X ([type]): [description]
+        Y ([type]): [description]
+        dx ([type]): [description]
+        dy ([type]): [description]
+        verbose (bool, optional): [description]. Defaults to False.
+    
+    Returns:
+        straightened_image: 3D straightened image
+
+    """
+    width_worm=100  #find optimal worm_with
+    
+    shapex=image_to_be_straighten.shape[2]
+    shapey=image_to_be_straighten.shape[1]
+    shapez=image_to_be_straighten.shape[0]
+
+    #create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*new coordinate system
+    n = np.arange(-width_worm,width_worm,sampling_space)
+    xcoord = X[:,None] - n[None,:]*dy[:,None]
+    ycoord = Y[:,None] + n[None,:]*dx[:,None]
+    
+    grid_x, grid_y = np.meshgrid(np.arange(0,shapex),np.arange(0,shapey))
+    coord_old = np.array([grid_x.reshape(shapex*shapey),grid_y.reshape(shapex*shapey)]).T
+
+    #create empty image
+    straightened_image=np.empty([shapez,xcoord.shape[0],xcoord.shape[1]])
+
+    #go over each slide and fill the straightened image
+    for zslide in range(shapez):
+        print(zslide)
+        intensity_old = image_to_be_straighten[zslide,:,:].reshape(shapex*shapey)
+        intensity_new = interpolate.griddata(coord_old, intensity_old, (ycoord.reshape(xcoord.size), xcoord.reshape(ycoord.size)))
+        straightened_image[zslide,:,:]= np.squeeze(intensity_new).reshape(xcoord.shape)
+
+    if (verbose==True):
+        plt.figure()
+        plt.imshow(np.max(image_to_be_straighten,0).T)
+        plt.plot(X,Y)
+        plt.plot(xcoord.T,ycoord.T)
+        plt.title("original image")
+        plt.show()
+
+        plt.figure()
+        plt.imshow(np.max(straightened_image,0).T)
+        plt.title("straightened image")
+        plt.show()
+
+    return straightened_image
+
+def straighten_image2D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Straightening the worm. Verbose mode.')
+
+    # create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
+    n = np.arange(-width_worm,width_worm,sampling_space)
+    xcoord = X[:,None] - n[None,:]*dy[:,None]
+    ycoord = Y[:,None] + n[None,:]*dx[:,None]
+
+    shapex=image_to_be_straighten.shape[1]
+    shapey=image_to_be_straighten.shape[0]
+    
+    grid_x, grid_y = np.meshgrid(np.arange(0,shapex),np.arange(0,shapey))
+    coord_old = np.array([grid_x.reshape(shapex*shapey),grid_y.reshape(shapex*shapey)]).T
+
+    #new image
+    intensity_old = image_to_be_straighten.reshape(shapex*shapey)
+    intensity_new = interpolate.griddata(coord_old, intensity_old, (ycoord.reshape(xcoord.size), xcoord.reshape(ycoord.size)))
+    straightened_image= np.squeeze(intensity_new).reshape(xcoord.shape)
+    straightened_image=np.nan_to_num(straightened_image)
+
+    if (verbose==True):
+        stop = toc(start)    
+
+    return straightened_image, (xcoord, ycoord)
+
+def straighten_image2D_dual(images_to_be_straightened,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Straightening the worm. Verbose mode.')
+
+
+    straightened_images = []
+
+    # create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
+    n = np.arange(-width_worm,width_worm,sampling_space)
+    xcoord = X[:,None] - n[None,:]*dy[:,None]
+    ycoord = Y[:,None] + n[None,:]*dx[:,None]
+
+    shapex=np.shape(images_to_be_straightened)[2]
+    shapey=np.shape(images_to_be_straightened)[1]
+    
+    grid_x, grid_y = np.meshgrid(np.arange(0,shapex),np.arange(0,shapey))
+    coord_old = np.array([grid_x.reshape(shapex*shapey),grid_y.reshape(shapex*shapey)]).T
+
+    if verbose:
+        print('Creating the grid.', end = " ")
+        stop = toc(start)
+        start = tic()
+
+    for k, image_to_be_straighten in enumerate(images_to_be_straightened):
+        #new image
+        intensity_old = image_to_be_straighten.reshape(shapex*shapey)
+        intensity_new = interpolate.griddata(coord_old, intensity_old, (ycoord.reshape(xcoord.size), xcoord.reshape(ycoord.size)))
+        straightened_image= np.squeeze(intensity_new).reshape(xcoord.shape)
+        straightened_image=np.nan_to_num(straightened_image)
+
+        # Stacking
+        straightened_images.append(straightened_image)
+
+        if verbose:
+            print('Straightening a worm.', end = " ")
+            stop = toc(start)
+            start = tic()
+
+    return straightened_images, (xcoord, ycoord)
+
+def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
+
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.')
+
+    shapex = img_binary.shape[-2]
+    shapey = img_binary.shape[-1]
+
+    # Define the points
+    grid_y, grid_x = np.meshgrid(np.arange(0,shapey),np.arange(0,shapex))
+
+    # Find the first line
+    points2mask = np.linspace(0,1,np.shape(X)[0])
+
+    # Creating storing matrices
+    npoints = 21
+    adj_mat = np.zeros([npoints, shapex, shapey])
+    k_mat = np.zeros([shapex, shapey])
+
+    # Computing distances
+    for k, cut_ths in enumerate(np.linspace(0,1,npoints)):
+        point_ref = np.sum(points2mask<cut_ths)
+        adj_mat[k,:,:] = np.sqrt( (X[point_ref]-grid_x)**2+(Y[point_ref]-grid_y)**2)
+
+    # Computing the region of thresholds
+    val_mat = np.where(adj_mat == np.min(adj_mat,axis = 0))
+    k_mat[val_mat[1],val_mat[2]] = val_mat[0]/(npoints-1)
+
+    
+    if verbose:
+        print('Computing the domains.', end = " ")
+        stop = toc(start)
+        start = tic()
+
+    # Find the upperline
+    upper = np.sum(points2mask<=cut_th)
+    lower = np.sum(points2mask<=(1-cut_th))
+
+    # Reference point
+    ref_up = X[upper]*dx[upper]+Y[upper]*dy[upper]
+    ref_low = X[lower]*dx[lower]+Y[lower]*dy[lower]
+
+    # define the upper points to be zero
+    fun_u = (grid_y*dy[upper]+grid_x*dx[upper])
+    fun_l = (grid_y*dy[lower]+grid_x*dx[lower])
+    binary_upper = fun_u<ref_up
+    binary_lower = fun_l>ref_low
+
+    # Computing the new thresholded areas
+    final_upper = (1-((binary_upper).astype(int)*(k_mat<=cut_th).astype(int)))
+    final_lower = (1-((binary_lower).astype(int)*(k_mat>=(1-cut_th)).astype(int)))
+
+    #new image
+    binary_grid = final_upper*final_lower
+
+    # Final product
+    binary_new = binary_grid*img_binary
+    # if np.ndim(img_binary)==2:
+    #     binary_new = binary_grid*img_binary
+    # elif np.ndim(img_binary)==3:
+    #     binary_new = binary_grid[None,:,:]*img_binary
+
+
+    # plt.figure()
+    # plt.contour((fun_u)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_upper)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+    # plt.figure()
+    # plt.contour((fun_l)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_lower)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+
+    #adapt if it is 2D!!!
+    if verbose:
+        print('Computing the derivative domains.', end = " ")
+        stop = toc(start)
+        
+    return binary_new
+
+def arc_length(x, y):
+    npts = len(x)
+    arc = np.sqrt((x[1] - x[0])**2 + (y[1] - y[0])**2)
+    for k in range(1, npts):
+        arc = arc + np.sqrt((x[k] - x[k-1])**2 + (y[k] - y[k-1])**2)
+    
+    return arc

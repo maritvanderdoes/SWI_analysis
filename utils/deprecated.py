@@ -14,6 +14,10 @@ from scipy.ndimage.measurements import label
 from skimage.measure import regionprops
 import scipy.ndimage.morphology as scimorph
 import skimage.morphology as skimorph
+from fil_finder import FilFinder2D
+import astropy.units as u
+from utils.benchmarking import tic,toc
+
 
 #-----------------------------------------------------------------------------
 # Loading Datasets
@@ -251,3 +255,175 @@ def img_thresholding(input_image):
     # plt.text(treshold+20,50, 'threshold = '+ str(treshold))
 
     return binary_image
+
+def calculate_worm_properties(img_binary, img_signal):
+    '''
+    worm_proprties_output is a function that  calculates different properties 
+    (volume, mean_intensity, min_intensity) of the signal images, based on the 
+    biggest segmented area in the binary image
+
+    Parameters
+    ----------
+    img_binary : binary image
+    img_signal : signal image
+
+    Returns
+    -------
+    binary_image : image that only contains the best area
+    volume         : area of the best area
+    mean_intensity: mean intensity of the signal image in the best area
+    min_intensity: minimum intensity of the signal image in the best area
+
+    '''
+    
+    #select biggest area
+    ccs, num_ccs = label(img_binary) #set labels in binary image
+    properties=regionprops(ccs,img_signal,['area','mean_intensity','min_intensity']) #calculates the properties of the different areas
+    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
+    
+    #outputs
+    cropped_binary=best_region.image
+    cropped_image=best_region.intensity_image
+
+    min_intensity=best_region.min_intensity
+    mean_intensity=best_region.mean_intensity
+    volume=best_region.area
+
+    #possible outputs
+    centroid = best_region.centroid
+    binary_image= (ccs == best_region.label).astype(np.uint8)
+    metrics = (cropped_image, cropped_binary, volume, mean_intensity, min_intensity)
+    
+    return  metrics
+
+def create_skeleton(image, mask, verbose=False):
+    """ function uses the package https://fil-finder.readthedocs.io/en/latest/ 
+    to create skeleton and prune the she skeleton based on the colored image. 
+    Images can be in 3D, but it creates a skeleton based on the maximum intensity projection of the 3D images.
+    So the function generates a skeleton in X and Y coordinates. 
+    For extra accuracy, the mask is also loaded. 
+    
+
+    Args:
+        image ([3D image]): [Image with signal used for segmentation]
+        mask ([3D image]): [generated mask for the image]
+        verbose (bool, optional): [When true, skeletion will be plotted in the image ]. Defaults to False.
+
+    Returns:
+        X: 
+        Y:
+    
+    """
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Computing the skeleton. Verbose mode.', end = " ")
+
+    zslide_to_focus = np.int(mask.shape[0]/2)
+
+    image2D = image[zslide_to_focus,:,:]
+    mask2D = mask[zslide_to_focus,:,:]
+ 
+
+    fil = FilFinder2D(image2D, mask=mask2D) #creates a class, add beamwith?!
+    # idea, put the fill finder on one plane where the worm is in focus 
+    fil.preprocess_image()
+    fil.create_mask(use_existing_mask=True)
+    fil.medskel(verbose=False)
+    fil.analyze_skeletons(branch_thresh=40* u.pix, skel_thresh=10 * u.pix, prune_criteria='length')
+
+    skeletonized_image=fil.skeleton_longpath
+    [X,Y]=np.where(skeletonized_image==1)
+
+    if verbose:
+        stop = toc(start)
+
+    return X, Y
+
+def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
+
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Cutting the worm at '+str(cut_th*100)+'%. Verbose mode.', end = " ")
+
+    # # check for sizes
+    # if np.ndim(img_binary)==2:
+    #     shapez = 1
+    #     shapex = img_binary.shape[0]
+    #     shapey = img_binary.shape[1]
+    # elif np.ndim(img_binary)==3:
+    #     shapez = img_binary.shape[0]
+    #     shapex = img_binary.shape[1]
+    #     shapey = img_binary.shape[2]
+
+    shapex = img_binary.shape[-2]
+    shapey = img_binary.shape[-1]
+    
+    # if verbose:
+    #     print("Number of z_planes: "+number_z)
+
+    # binary_to_test
+    # Define the points
+    grid_y, grid_x = np.meshgrid(np.arange(0,shapey),np.arange(0,shapex))
+
+    # Find the first line
+    points2mask = np.linspace(0,1,np.shape(X)[0])
+
+    # Find the upperline
+    upper = np.sum(points2mask<cut_th)
+    lower = np.sum(points2mask<(1-cut_th))
+
+    # Reference point
+    ref_up = X[upper]*dx[upper]+Y[upper]*dy[upper]
+    ref_low = X[lower]*dx[lower]+Y[lower]*dy[lower]
+
+    # define the upper points to be zero
+    fun_u = (grid_y*dy[upper]+grid_x*dx[upper])
+    fun_l = (grid_y*dy[lower]+grid_x*dx[lower])
+    binary_upper = fun_u>ref_up
+    binary_lower = fun_l<ref_low
+
+    #new image
+    binary_grid = binary_upper*binary_lower
+
+    # Final product
+    binary_new = binary_grid*img_binary
+    # if np.ndim(img_binary)==2:
+    #     binary_new = binary_grid*img_binary
+    # elif np.ndim(img_binary)==3:
+    #     binary_new = binary_grid[None,:,:]*img_binary
+
+
+    # plt.figure()
+    # plt.contour((fun_u)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_upper)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+    # plt.figure()
+    # plt.contour((fun_l)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+    # plt.figure()
+    # plt.imshow((mat_lower)*img_binary)
+    # plt.plot(Y[upper],X[upper],'ro')
+    # plt.plot(Y[lower],X[lower],'rx')
+
+
+    #adapt if it is 2D!!!
+    if verbose:
+        stop = toc(start)
+        
+    return binary_new
+
+def _arc_length(x, y):
+    npts = len(x)
+    arc = np.sqrt((x[1] - x[0])**2 + (y[1] - y[0])**2)
+    for k in range(1, npts):
+        arc = arc + np.sqrt((x[k] - x[k-1])**2 + (y[k] - y[k-1])**2)
+    
+    return arc
