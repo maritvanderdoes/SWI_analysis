@@ -1,4 +1,5 @@
 import timeit
+import os
 import numpy as np
 import signal
 from contextlib import contextmanager
@@ -10,14 +11,16 @@ def tic():
     start = timeit.default_timer()
     return start
 
-def toc(start):
+def toc(start, print_elapsed = True):
     '''
     Computes elapsed time from the temporal checkpoint given by start.
     Requires of the tic() function in the utils.benchmarking module.
     '''
     stop = timeit.default_timer()
     elapsed = (stop - start)
-    print('Elapsed time of ' +"{:.2f}".format(elapsed)+' seconds')
+    if print_elapsed:
+        print('Elapsed time of ' +"{:.2f}".format(elapsed)+' seconds')
+    
     return elapsed
 
 def downscaling(images, xy_factor = 2, z0 = None, zf = None, verbose = False):
@@ -91,6 +94,51 @@ def downscaling(images, xy_factor = 2, z0 = None, zf = None, verbose = False):
 
     return downscaled_images
 
+# Debug logs
+def saving_log(debugpath, state, frame, position, status, runtime = 0):
+
+    # Debug name
+    debug_name = debugpath+'/'+state+'_Sample'+'_t'+frame+'_s'+position+'_Status.txt'
+
+    # Defining for Running
+    if state == 'RUNNING':
+        # Creating
+        if status == 'File read':
+            with open(debug_name, 'w') as f:
+                f.write(status + ', with time of '+ str(np.round(runtime,2)) + ' (seconds)')
+
+        # Appending
+        else:
+            with open(debug_name, 'a') as f:
+                f.write('\n' + status + ', with time of '+ str(np.round(runtime,2)) + ' (seconds)')
+
+    # Renaming if error or completed
+    else:
+        if os.path.exists(debug_name):
+            os.remove(debug_name)
+            print('File has been overwritten')
+
+        os.rename(debugpath+'/RUNNING_Sample'+'_t'+frame+'_s'+position+'_Status.txt', debug_name)
+        with open(debug_name, 'a') as f:
+            f.write('\nFinal time of '+ str(np.round(runtime,2)) + ' (seconds)')
+
+    return status
+
+#%%
+def basic_scramble(list_mcherry, list_GFP):
+    # Computing the size
+    dim = np.shape(list_mcherry)
+
+    # Permuting ordering array
+    permutation_array = np.arange(0, dim[0])
+    permutation_array = np.random.permutation(permutation_array)
+
+    # Shuffling
+    list_mcherry = [list_mcherry[k] for k in permutation_array]
+    list_GFP = [list_GFP[k] for k in permutation_array]
+
+    return (list_mcherry, list_GFP)
+
 #%% Generating timeout function
 
 @contextmanager
@@ -111,3 +159,4 @@ def timeout(time):
 
 def raise_timeout(signum, frame):
     raise TimeoutError
+

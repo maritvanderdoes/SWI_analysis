@@ -488,7 +488,7 @@ def _mask_refinement(input_mask, z_threshold = 0.2):
 # straightening
 
 
-def create_skeleton(mask, verbose=False):
+def create_skeleton(mask, fast_skeletonisation = True, verbose=False):
     """[summary]
 
     Args:
@@ -499,21 +499,53 @@ def create_skeleton(mask, verbose=False):
         X: unsorted x coordinates of skeleton
         Y: unsorted y coordinates of skeleton
     """
-    zslide_to_focus=np.int(mask.shape[0]/2)
 
-    image=mask[zslide_to_focus,:,:]
-    skeletonized_image=skeletonize(image)
-    [X,Y]=np.where(skeletonized_image==1)
-    
-    if (verbose==True):
-        plt.figure()
-        plt.imshow(image, cmap='gray')
-        plt.contour(skeletonized_image, colors='r')
-        plt.axis('off')
-        plt.title('check skeleton')
-        plt.show()
-    
-    return X,Y
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Computing the skeleton. Verbose mode.', end = " ")
+
+    # Select the central plane (A)
+    # zslide_to_focus=np.int(mask.shape[0]/2)
+    # image = mask[zslide_to_focus,:,:]
+
+    # Select the best plane (B)
+    if np.ndim(mask)>2:
+        area_cropped = np.sum(np.sum(mask,axis=2),axis = 1)
+        best_plane = np.where(area_cropped == np.max(area_cropped))[0][0]
+        mask = mask[best_plane,:,:]    
+
+    # Selection of plane
+    image = mask
+
+    # Do scikit skeletonisation
+    if fast_skeletonisation:
+        image = skeletonize(image)
+
+    # Using FilFinder
+    fil = FilFinder2D(image, mask=image, beamwidth=0*u.pix)
+    fil.create_mask(use_existing_mask=True)
+    fil.medskel(verbose = False)
+    fil.analyze_skeletons(branch_thresh= 40*u.pix, skel_thresh= 10*u.pix, prune_criteria='length')
+
+    # Select the longest path
+    if fil.number_of_filaments > 1:
+        long_idx = np.where(np.max(fil.lengths())==fil.lengths())[0][0]
+        long_fil = fil.filaments[long_idx]
+    else:
+        long_fil = fil.filaments[0]
+
+    # Extract coordinates
+    [X, Y] = long_fil.longpath_pixel_coords
+
+    # Finding the points (old)
+    # skeletonized_image=fil.skeleton_longpath
+    # [X,Y]=np.where(skeletonized_image==1)
+
+    if verbose:
+        stop = toc(start)
+
+    return X, Y
 
 def create_spline(X,Y, sampling_space=1 , s=100, k=3, n_neighbors = 2, verbose=False):
     """Creates a spline through the X and Y coordinates by a number of splinepoints.
@@ -817,3 +849,71 @@ def arc_length(x, y):
         arc = arc + np.sqrt((x[k] - x[k-1])**2 + (y[k] - y[k-1])**2)
     
     return arc
+
+
+def straighten_image2D_dual_fast(images_to_be_straightened,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
+    # Debugging and benchmarking
+    if verbose:
+        start = tic()
+        print('Straightening the worm. Verbose mode.')
+
+
+    straightened_images = []
+
+    # create new coordinate system
+    # new coord system= old coordinate system + (-dy,dx)*orthogonal coordinate
+    n = np.arange(-width_worm,width_worm,sampling_space)
+    xcoord = X[:,None] - n[None,:]*dy[:,None]
+    ycoord = Y[:,None] + n[None,:]*dx[:,None]
+
+    #shapex=np.shape(images_to_be_straightened)[2]
+    #shapey=np.shape(images_to_be_straightened)[1]
+    
+    #grid_x, grid_y = np.meshgrid(np.arange(0,shapex),np.arange(0,shapey))
+    #coord_old = np.array([grid_x.reshape(shapex*shapey),grid_y.reshape(shapex*shapey)]).T
+
+    # Reducing dimenisonality by uniqueness
+    yreshape = ycoord.reshape(xcoord.size)
+    xreshape = xcoord.reshape(ycoord.size)
+    coord_img = yreshape.astype(int) + 1j*xreshape.astype(int)
+    coord_img = np.unique(coord_img)
+
+    # Check for neighbouring points for uniqueness
+    for yk in np.array([-1,1]):
+        for xk in np.array([-1,1]):
+            coord_img_n = yreshape.astype(int)+yk + 1j*(xreshape.astype(int)+xk)
+            coord_img = np.concatenate((coord_img, coord_img_n))
+            coord_img = np.unique(coord_img)
+
+    # Take the new coordinates
+    y_old = np.real(coord_img)
+    x_old = np.imag(coord_img)
+
+    # Assumes it is square (trying to fix this)
+    # Removes points out of the image
+    criteria = (y_old<images_to_be_straightened[0].shape[1])*(y_old>0)*(x_old<images_to_be_straightened[0].shape[0])*(x_old>0)
+    y_old = y_old[criteria]
+    x_old = x_old[criteria]
+
+    if verbose:
+        print('Creating the grid.', end = " ")
+        _ = toc(start)
+        start = tic()
+
+    for k, image_to_be_straighten in enumerate(images_to_be_straightened):
+        #new image
+        reduced_intensity_old = image_to_be_straighten[x_old.astype(int),y_old.astype(int)]
+        reduced_coord_old = np.array([y_old,x_old]).T
+        intensity_new = interpolate.griddata(reduced_coord_old, reduced_intensity_old, (ycoord.reshape(xcoord.size), xcoord.reshape(ycoord.size)))
+        straightened_image= np.squeeze(intensity_new).reshape(xcoord.shape)
+        straightened_image=np.nan_to_num(straightened_image)
+
+        # Stacking
+        straightened_images.append(straightened_image)
+
+        if verbose:
+            print('Straightening a worm.', end = " ")
+            _ = toc(start)
+            start = tic()
+
+    return straightened_images, (xcoord, ycoord)

@@ -327,7 +327,7 @@ def create_skeleton(image, mask, verbose=False):
 
     fil = FilFinder2D(image2D, mask=mask2D) #creates a class, add beamwith?!
     # idea, put the fill finder on one plane where the worm is in focus 
-    fil.preprocess_image()
+    # fil.preprocess_image()
     fil.create_mask(use_existing_mask=True)
     fil.medskel(verbose=False)
     fil.analyze_skeletons(branch_thresh=40* u.pix, skel_thresh=10 * u.pix, prune_criteria='length')
