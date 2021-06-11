@@ -59,7 +59,7 @@ def main_function(list_mcherry,list_GFP):
 
     try:
         # Create mask
-        print('MAIN: Adaptive Masking')
+        # print('MAIN: Adaptive Masking')
         img_binary, _  = adaptive_masking(img_mcherry, mm_th = 1.8, exp_size = 3)
 
         # Saving Mask
@@ -83,7 +83,7 @@ def main_function(list_mcherry,list_GFP):
         if steps == 'Masking': return current_res
 
         # Cropping image for further processing
-        print('MAIN: Cropping data.')
+        # print('MAIN: Cropping data.')
         cropped_binary, cropped_image = crop_image(img_binary, img_gfp)
 
         # Saving Cropped Mask
@@ -93,7 +93,7 @@ def main_function(list_mcherry,list_GFP):
             imsave(foldername+'\A21_Cropped_data'+'.tiff',np.float16(cropped_image), check_contrast = False)
 
         # Saving status
-        status = saving_log(debugpath, 'RUNNING', current_res['Frame'], current_res['Position'],'Cropped Image', runtime = toc(start0, False))
+        # status = saving_log(debugpath, 'RUNNING', current_res['Frame'], current_res['Position'],'Cropped Image', runtime = toc(start0, False))
 
         if sngpln:
             print('Select single plane')
@@ -118,7 +118,7 @@ def main_function(list_mcherry,list_GFP):
         if steps == 'Cropping': return current_res
 
         # Skelotinisation
-        print('MAIN: Skeletonisation and Spline.')
+        # print('MAIN: Skeletonisation and Spline.')
         # Xinput, Yinput = create_skeleton(cropped_image, cropped_binary)
         Xinput, Yinput = create_skeleton(cropped_binary)
 
@@ -162,7 +162,7 @@ def main_function(list_mcherry,list_GFP):
         if steps == 'Skeletonisation': return current_res
 
         # Cutting off head and tail
-        print('MAIN: Head to tail.')
+        # print('MAIN: Head to tail.')
         cropped_binary_ht = head2tail_masking(X,Y,dx,dy,cropped_binary,cut_th=0.2)
 
         if debugging:
@@ -195,7 +195,7 @@ def main_function(list_mcherry,list_GFP):
         length = arc_length(X,Y)
 
         # Straightening the worm
-        print('MAIN: Straightening.')
+        # print('MAIN: Straightening.')
         (straightened_image, straightened_binary), (xcoord, ycoord) = \
             straighten_image2D_dual_fast((max_image, max_binary), X, Y, dx, dy, width_worm = int(length/10))
 
@@ -247,8 +247,7 @@ def main_function(list_mcherry,list_GFP):
             plt.close(fig)
 
         # Saving status
-        status = saving_log(debugpath, 'RUNNING', current_res['Frame'], current_res['Position'],'Straightened worm', runtime = toc(start0, False))
-            
+        # status = saving_log(debugpath, 'RUNNING', current_res['Frame'], current_res['Position'],'Straightened worm', runtime = toc(start0, False))
 
         # Calculating intensity straightened worm
         (mean_straightened, area_straightened) = calculate_worm_properties(straightened_binary,straightened_image)
@@ -261,7 +260,7 @@ def main_function(list_mcherry,list_GFP):
         if steps == 'Straightening': return current_res
 
         #cutting off head and tail, calculating properties
-        print('MAIN: Cutting Straigthened.')
+        # print('MAIN: Cutting Straigthened.')
         cutoff=int(straightened_image.shape[0]*0.2)
         straightened_binary_ht = straightened_binary[cutoff:-cutoff,:]
         straightened_image_ht = straightened_image[cutoff:-cutoff,:]
@@ -277,7 +276,7 @@ def main_function(list_mcherry,list_GFP):
         if steps == 'Cutting_Straightened': return current_res
     
         #length of worm
-        print('MAIN: Calculating length.')
+        # print('MAIN: Calculating length.')
         length = length/xdim
         bens_volume=np.pi*current_res['area_straightened']**2/(4*length)
 

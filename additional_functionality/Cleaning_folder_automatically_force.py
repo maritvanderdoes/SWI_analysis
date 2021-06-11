@@ -21,7 +21,7 @@ print(os.path.exists(dirpath))
 
 # Channels
 channel_GFP =   '_1_w1Lucas-sim-488-561'
-channel_mcherry= '_1_w2Lucas-sim-561-488'
+channel_mcherry = '_1_w2Lucas-sim-561-488'
 channel_BF = '_2_Lucas-Brightfield-488-561'
 channels = [channel_GFP,channel_mcherry,channel_BF]
 
@@ -38,7 +38,6 @@ fullpath = dirpath+'/'+basename+'_t'+str(k)+'_s'+str(s_removal)+\
            '_l'+l_removal+str(p_removal)+channel_sel+'.stk'
 
 print(fullpath)
-
 
 
 # %%
