@@ -26,9 +26,9 @@ channel_BF = '_2_Lucas-Brightfield-488-561'
 channels = [channel_GFP,channel_mcherry,channel_BF]
 
 #%% Selecting file to remove
-s_removal = 94
+s_removal = 93
 l_removal = 'pMUT'
-p_removal = 34
+p_removal = 33
 
 #%% Creating the filename
 k = 1
@@ -60,4 +60,30 @@ for k in range(0,241):
                 f.write('\n'+filename+' has been removed.')
 
         
+# %%
+
+# %%
+
+for s_removal in np.arange(61,90):
+    p_removal = s_removal-60
+
+    dir_log = dirpath+'/'+basename+'_s'+str(s_removal)+'.txt'
+    print('Removing '+basename+'_s'+str(s_removal))
+
+    # Iterate per timepoint
+    for k in range(0,241):
+        # Iterate per channel
+        for c in range(0,3):
+            # Check the filename
+            filename = basename+'_t'+str(k)+'_s'+str(s_removal)+\
+                '_l'+l_removal+str(p_removal)+channels[c]+'.stk'
+            
+            # Creating the full path
+            fullpath = dirpath+'/'+filename
+
+            # Removing files
+            if os.path.exists(fullpath):
+                os.remove(fullpath)
+                with open(dir_log, 'a') as f:
+                    f.write('\n'+filename+' has been removed.')
 # %%
