@@ -26,9 +26,9 @@ channel_BF = '_2_Lucas-Brightfield-488-561'
 channels = [channel_GFP,channel_mcherry,channel_BF]
 
 #%% Selecting file to remove
-s_removal = 1
-l_removal = 'HW2668p'
-p_removal = 1
+s_removal = 94
+l_removal = 'pMUT'
+p_removal = 34
 
 #%% Creating the filename
 k = 1
@@ -38,8 +38,7 @@ fullpath = dirpath+'/'+basename+'_t'+str(k)+'_s'+str(s_removal)+\
            '_l'+l_removal+str(p_removal)+channel_sel+'.stk'
 
 print(fullpath)
-
-
+print(os.path.exists(fullpath))
 # %%
 dir_log = dirpath+'/'+basename+'_s'+str(s_removal)+'.txt'
 
@@ -61,3 +60,4 @@ for k in range(0,241):
                 f.write('\n'+filename+' has been removed.')
 
         
+# %%
