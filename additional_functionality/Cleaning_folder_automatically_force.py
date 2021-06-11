@@ -64,7 +64,7 @@ for k in range(0,241):
 
 # %%
 
-for s_removal in np.arange(61,90):
+for s_removal in np.arange(67,90):
     p_removal = s_removal-60
 
     dir_log = dirpath+'/'+basename+'_s'+str(s_removal)+'.txt'

@@ -145,6 +145,59 @@ def image_lists(directory, channel1, channel2 = None, channel3 = None):
 
     return list_set
 
+
+# read files from folder
+def single_image_lists(directory, channel1, s_sel, t_sel = None, channel2 = None, channel3 = None, data_format = 'ts'):
+    '''
+    List images for different channels of the same image. Images are
+    assumed to be in the same directory. Marit's convention tend to 
+    order channels as mCherry, GFP and BF (see parenthesis).
+
+    It can take a single channel and up to three.
+
+    Version note: This function replaces image_lists_BF_GFP,
+    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
+    Marit module.
+
+    Parameters
+    ----------
+    dir1 : directory where all images are located
+    channel1 : name of channel1 images (mcherry)
+    channel2 : name of channel2 images (GFP)
+    channel3 : name of channel3 images (BF)
+
+    Returns
+    -------
+    list_1 : list of files with the channel1 (mCherry)
+    list_2 : list of files with the channel2 (GFP)
+    list_3 : list of files with the channel3 (BF)
+
+    '''
+    list_set = []
+    if data_format == 'st':
+        if t_sel == None:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
+        else:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_t"+str(t_sel)+"_*"+channel1+"*")))
+    
+    if data_format == 'ts':
+        if t_sel == None:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
+        else:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_t"+str(t_sel)+"_s"+str(s_sel)+"_*"+channel1+"*")))
+
+    list_set.append(list_1)
+
+    if channel2 is not None:
+        list_2=[name.replace(channel1, channel2) for name in list_1] 
+        list_set.append(list_2)
+
+    if channel3 is not None:
+        list_3= [name.replace(channel1, channel3) for name in list_1] 
+        list_set.append(list_3)
+
+    return list_set
+
 #-----------------------------------------------------------------------------
 # Calculating worm properties
 def crop_image(img_binary, img_signal):
