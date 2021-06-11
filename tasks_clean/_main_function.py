@@ -283,13 +283,14 @@ def main_function(list_mcherry,list_GFP):
 
             current_res['bens_volume'] = bens_volume
 
+            # Saving logs
+            stop_alg = toc(start0)
+            status = saving_log(debugpath, 'COMPLETED', current_res['Frame'], current_res['Position'], 'Completed', runtime = stop_alg)
+
+
         except:
             print('MAIN: Some computations have not finished.')
             status = saving_log(debugpath, 'ERROR', current_res['Frame'], current_res['Position'], status +' (after error)', runtime = toc(start0, False))
 
-        stop_alg = toc(start0)
-
-        # Saving logs
-        status = saving_log(debugpath, 'COMPLETED', current_res['Frame'], current_res['Position'], 'Completed', runtime = stop_alg)
 
         return current_res
