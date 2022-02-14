@@ -5,7 +5,7 @@ contrib = ['Marit van der Does']
 # setup.
 setup(
     name='swi-analysis',
-    version='0.0.0',
+    version='1.0.0',
     description='SWI analysis in python',
     author=', '.join(contrib),
     license='MIT',
@@ -20,5 +20,6 @@ setup(
         'seaborn>=0.11',
         'pandas>=1.1',
         'luigi>=3.0'
+        'statsmodels>=0.12.2'
     ],
 )

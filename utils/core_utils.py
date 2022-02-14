@@ -4,37 +4,128 @@
 # Importing required libraries
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage import gaussian_filter
+import pandas as pd
+import scipy.signal as sig
+import statsmodels.api as sm
+
+
 import glob
 import os
 import re
-import networkx as nx
-from fil_finder import FilFinder2D
-import astropy.units as u
 
+import networkx as nx
+import astropy.units as u
+from fil_finder import FilFinder2D
+from sklearn.neighbors import NearestNeighbors
 
 from skimage import io
-import skimage.filters as skf
-import skimage.morphology as skimorph
 from skimage.morphology import skeletonize
-
 from skimage.measure import regionprops
+import skimage.morphology as skimorph
 
 from scipy.ndimage.measurements import label 
-import scipy.ndimage.morphology as scimorph
-
 from scipy import interpolate
-
-from sklearn.neighbors import NearestNeighbors
-from sklearn.neighbors import KNeighborsRegressor
+import scipy.ndimage.morphology as scimorph
 
 from utils.benchmarking import tic,toc
 
 
+#-----------------------------------------------------------------------------
+# read files from folder
+def image_lists(directory, channel1, channel2 = None, channel3 = None):
+    '''
+    List images for different channels of the same image. Images are
+    assumed to be in the same directory. Marit's convention tend to 
+    order channels as mCherry, GFP and BF (see parenthesis).
+
+    It can take a single channel and up to three.
+
+    Version note: This function replaces image_lists_BF_GFP,
+    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
+    Marit module.
+
+    Parameters
+    ----------
+    dir1 : directory where all images are located
+    channel1 : name of channel1 images (mcherry)
+    channel2 : name of channel2 images (GFP)
+    channel3 : name of channel3 images (BF)
+
+    Returns
+    -------
+    list_1 : list of files with the channel1 (mCherry)
+    list_2 : list of files with the channel2 (GFP)
+    list_3 : list of files with the channel3 (BF)
+
+    '''
+    list_set = []
+    list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
+    list_set.append(list_1)
+
+    if channel2 is not None:
+        list_2=[name.replace(channel1, channel2) for name in list_1] 
+        list_set.append(list_2)
+
+    if channel3 is not None:
+        list_3= [name.replace(channel1, channel3) for name in list_1] 
+        list_set.append(list_3)
+
+    return np.squeeze(list_set)
+
+# read particular files from folder
+def single_image_lists(directory, channel1, channel2 = None, s_sel = 1, t_sel = None, channel3 = None, data_format = 'ts'):
+    '''
+    List images for different channels of the same image. Images are
+    assumed to be in the same directory. Marit's convention tend to 
+    order channels as mCherry, GFP and BF (see parenthesis).
+
+    It can take a single channel and up to three.
+
+    Version note: This function replaces image_lists_BF_GFP,
+    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
+    Marit module.
+
+    Parameters
+    ----------
+    dir1 : directory where all images are located
+    channel1 : name of channel1 images (mcherry)
+    channel2 : name of channel2 images (GFP)
+    channel3 : name of channel3 images (BF)
+
+    Returns
+    -------
+    list_1 : list of files with the channel1 (mCherry)
+    list_2 : list of files with the channel2 (GFP)
+    list_3 : list of files with the channel3 (BF)
+
+    '''
+    list_set = []
+    if data_format == 'st':
+        if t_sel == None:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
+        else:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_t"+str(t_sel)+"_*"+channel1+"*")))
+    
+    if data_format == 'ts':
+        if t_sel == None:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
+        else:
+            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_t"+str(t_sel)+"_s"+str(s_sel)+"_*"+channel1+"*")))
+
+    list_set.append(list_1)
+
+    if channel2 is not None:
+        list_2=[name.replace(channel1, channel2) for name in list_1] 
+        list_set.append(list_2)
+
+    if channel3 is not None:
+        list_3= [name.replace(channel1, channel3) for name in list_1] 
+        list_set.append(list_3)
+
+    return list_set
 
 #-----------------------------------------------------------------------------
 # Loading Datasets
-
 def read_image_and_metadata(path, data_format = 'ts'):
     '''
     Reads a STK or TIFF file for a path (include filename) and return
@@ -104,102 +195,57 @@ def read_image_and_metadata(path, data_format = 'ts'):
     return img_output, metadata_out
 
 #-----------------------------------------------------------------------------
-# read files from folder
-def image_lists(directory, channel1, channel2 = None, channel3 = None):
-    '''
-    List images for different channels of the same image. Images are
-    assumed to be in the same directory. Marit's convention tend to 
-    order channels as mCherry, GFP and BF (see parenthesis).
-
-    It can take a single channel and up to three.
-
-    Version note: This function replaces image_lists_BF_GFP,
-    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
-    Marit module.
-
-    Parameters
-    ----------
-    dir1 : directory where all images are located
-    channel1 : name of channel1 images (mcherry)
-    channel2 : name of channel2 images (GFP)
-    channel3 : name of channel3 images (BF)
-
-    Returns
-    -------
-    list_1 : list of files with the channel1 (mCherry)
-    list_2 : list of files with the channel2 (GFP)
-    list_3 : list of files with the channel3 (BF)
-
-    '''
-    list_set = []
-    list_1=sorted(glob.glob(os.path.join(directory, "*"+channel1+"*")))
-    list_set.append(list_1)
-
-    if channel2 is not None:
-        list_2=[name.replace(channel1, channel2) for name in list_1] 
-        list_set.append(list_2)
-
-    if channel3 is not None:
-        list_3= [name.replace(channel1, channel3) for name in list_1] 
-        list_set.append(list_3)
-
-    return list_set
-
-
-# read files from folder
-def single_image_lists(directory, channel1, s_sel, t_sel = None, channel2 = None, channel3 = None, data_format = 'ts'):
-    '''
-    List images for different channels of the same image. Images are
-    assumed to be in the same directory. Marit's convention tend to 
-    order channels as mCherry, GFP and BF (see parenthesis).
-
-    It can take a single channel and up to three.
-
-    Version note: This function replaces image_lists_BF_GFP,
-    image_lists_mcherry_GFP and image_lists_mcherry_GFP_BF from  the 
-    Marit module.
-
-    Parameters
-    ----------
-    dir1 : directory where all images are located
-    channel1 : name of channel1 images (mcherry)
-    channel2 : name of channel2 images (GFP)
-    channel3 : name of channel3 images (BF)
-
-    Returns
-    -------
-    list_1 : list of files with the channel1 (mCherry)
-    list_2 : list of files with the channel2 (GFP)
-    list_3 : list of files with the channel3 (BF)
-
-    '''
-    list_set = []
-    if data_format == 'st':
-        if t_sel == None:
-            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
-        else:
-            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_t"+str(t_sel)+"_*"+channel1+"*")))
-    
-    if data_format == 'ts':
-        if t_sel == None:
-            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_s"+str(s_sel)+"_*"+channel1+"*")))
-        else:
-            list_1=sorted(glob.glob(os.path.join(directory, "*"+"_t"+str(t_sel)+"_s"+str(s_sel)+"_*"+channel1+"*")))
-
-    list_set.append(list_1)
-
-    if channel2 is not None:
-        list_2=[name.replace(channel1, channel2) for name in list_1] 
-        list_set.append(list_2)
-
-    if channel3 is not None:
-        list_3= [name.replace(channel1, channel3) for name in list_1] 
-        list_set.append(list_3)
-
-    return list_set
-
-#-----------------------------------------------------------------------------
 # Calculating worm properties
+def calculate_worm_properties(img_binary, img_signal):
+    """calculate worm properties is a function that calculate the area of the segmented area
+    in the binary image, and calculate the mean intensity of this segmented area in the image signal.
+    This mean intensity is substracted by the minimum intensity as background substraction
+
+    Args:
+        img_binary (3D array): [description]
+        img_signal (3D array): [description]
+
+    Returns:
+        mean_intensity: [description]
+        volume        : 
+    """
+
+    #selects the biggest region
+    ccs, num_ccs = label(img_binary) #set labels in binary image
+    properties=regionprops(ccs,img_signal,['area',"mean_intensity"]) #calculates the properties of the different areas
+
+    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
+    #cropped_binary=best_region.image
+    #cropped_image=best_region.intensity_image
+
+    return best_region.mean_intensity, best_region.area   #returns the mean of the biggest selected region
+
+# Calculating worm properties
+def calculate_worm_properties_additional(img_binary, img_mcherry):
+    """calculate worm properties is a function that calculate the area of the segmented area
+    in the binary image, and calculate the mean intensity of this segmented area in the image signal.
+    This mean intensity is substracted by the minimum intensity as background substraction
+
+    Args:
+        img_binary (3D array): [description]
+        img_signal (3D array): [description]
+
+    Returns:
+        mean_intensity: [description]
+        volume        : 
+    """
+
+    #selects the biggest region
+    ccs, num_ccs = label(img_binary) #set labels in binary image
+    properties=regionprops(ccs,img_mcherry,['area',"mean_intensity",'centroid','eccentricity','perimeter']) #calculates the properties of the different areas
+
+    best_region = max(properties, key=lambda region: region.area) #selects the biggest region
+    #cropped_binary=best_region.image
+    #cropped_image=best_region.intensity_image
+
+    return best_region.mean_intensity, best_region.area, best_region.eccentricity, best_region.centroid[-2], best_region.centroid[-1], best_region.perimeter, np.sum(ccs)   #returns the mean of the biggest selected region
+
+
 def crop_image(img_binary, img_signal):
     """crop worm is a function that gets a cropped image of the biggest
     segmented region in the image.
@@ -212,7 +258,6 @@ def crop_image(img_binary, img_signal):
         cropped_image (3D arary): [description]
         cropped_binary (3D arary): [description]
     """
-
     
     ccs, num_ccs = label(img_binary) #set labels in binary image
     properties=regionprops(ccs,img_signal,['area']) #calculates the properties of the different areas
@@ -227,50 +272,8 @@ def crop_image(img_binary, img_signal):
 
     return cropped_binary,cropped_image
 
-def calculate_worm_properties(img_binary, img_signal, verbose = False):
-    """calculate worm properties is a function that calculate the area of the segmented area
-    in the binary image, and calculate the mean intensity of this segmented area in the image signal.
-    This mean intensity is substracted by the minimum intensity as background substraction
-
-    Args:
-        img_binary (3D array): [description]
-        img_signal (3D array): [description]
-
-    Returns:
-        mean_intensity: [description]
-        volume        : 
-    """
-    # Debugging and benchmarking
-    if verbose:
-        start = tic()
-        print('Calculating worm properties. Verbose mode.', end = " ")
-
-    ccs, num_ccs = label(img_binary) #set labels in binary image
-
-    if (num_ccs==1):
-        properties=regionprops(ccs,img_signal,['area','mean_intensity','min_intensity'])
- 
-        min_intensity=properties[0].min_intensity
-        mean_intensity=properties[0].mean_intensity-properties[0].min_intensity
-        volume=properties[0].area
-
-        # Debugging and benchmarking
-        if verbose:
-            stop = toc(start)
-
-        return (mean_intensity, volume)
-    
-    else:
-        # Debugging and benchmarking
-        if verbose:
-            stop = toc(start)
-
-        print('Multiple areas are selected, segmentation not good.')
-        return (np.nan, np.nan)
-
 #-----------------------------------------------------------------------------
 # Masking
-
 # Adaptive masking
 def adaptive_masking(input_image, mm_th = 3, th_sel = 0.3, krn_size = 2,
     krn_type = 'Disk', exp_size = 3, fill_holes = True, z_threshold = 0.7, 
@@ -537,10 +540,19 @@ def _mask_refinement(input_mask, z_threshold = 0.2):
 
     return output_mask, area_zplane
 
+# Masking the background
+def make_mask_background(binary_image):
+    krn = skimorph.disk(3)
+    surrounding_mask = np.zeros(binary_image.shape)
+    for zslide in np.arange(0,binary_image.shape[0]):
+        surrounding_mask[zslide,:,:] = skimorph.binary_dilation(binary_image[zslide,:,:], krn)
+
+    surrounding_mask = (surrounding_mask*(np.invert(binary_image)))==1
+ 
+    return surrounding_mask
 #------------------------------------------------------------------------------
-# straightening
-
-
+# Straightening
+# Skeletonisation
 def create_skeleton(mask, fast_skeletonisation = True, verbose=False):
     """[summary]
 
@@ -675,6 +687,7 @@ def create_spline(X,Y, sampling_space=1 , s=100, k=3, n_neighbors = 2, verbose=F
 
     return x_new, y_new, dx, dy
 
+# Straightening
 def straighten_image3D(image_to_be_straighten,X,Y,dx,dy,sampling_space=1, verbose=False):
     """
     streighten the image based on the spline and the derivatives of the spline.
@@ -895,15 +908,6 @@ def head2tail_masking(X, Y, dx, dy, img_binary, cut_th=0.2, verbose=False):
         
     return binary_new
 
-def arc_length(x, y):
-    npts = len(x)
-    arc = np.sqrt((x[1] - x[0])**2 + (y[1] - y[0])**2)
-    for k in range(1, npts):
-        arc = arc + np.sqrt((x[k] - x[k-1])**2 + (y[k] - y[k-1])**2)
-    
-    return arc
-
-
 def straighten_image2D_dual_fast(images_to_be_straightened,X,Y,dx,dy,sampling_space=1,width_worm=150, verbose=False):
     # Debugging and benchmarking
     if verbose:
@@ -970,3 +974,182 @@ def straighten_image2D_dual_fast(images_to_be_straightened,X,Y,dx,dy,sampling_sp
             start = tic()
 
     return straightened_images, (xcoord, ycoord)
+
+def arc_length(x, y):
+    npts = len(x)
+    arc = np.sqrt((x[1] - x[0])**2 + (y[1] - y[0])**2)
+    for k in range(1, npts):
+        arc = arc + np.sqrt((x[k] - x[k-1])**2 + (y[k] - y[k-1])**2)
+    
+    return arc
+#------------------------------------------------------------------------------
+# molt_detection
+
+def molt_detection(log_volume, outlier_th = 0.5, molt_th = 0.1, 
+                   median_filt = 5, noise_filt = 5, der_filt = 3, molt_filt = 3):
+    # Molt detection v1.1
+    # Note: Takes the last molt if molt_th>0 
+    # (so it slows down the growth, but it does not decreases)
+    #
+    # Requires:
+    #
+    # Numpy, Scipy
+
+    # KERNELS
+    # Mean filter to remove noise after outlier removal
+    avg_kern = np.ones(noise_filt)
+    # Mean filter to remove noise after outlier removal
+    avg_kern_diff = np.ones(der_filt)
+    # Fixing molt filter
+    mlt_kern = np.ones(molt_filt)
+    # Finite difference scheme for outliers (First order, central, Second Der)
+    outl_kern = [-1,2,-1]
+    # # Finite difference scheme for derivative (Second order, central)
+    # diff_kern = [-1,8,0,-8,1]    
+    # # Finite difference scheme for derivative (Third order, central)
+    # diff_kern = [1/60,-3/20,3/4,0,-3/4,3/20,-1/60]
+
+    # Finite difference scheme for derivative (Second order, backwards)
+    diff_kern = [3,1,-4]
+
+
+    # REMOVING OUTLIERS
+    # Computing how far the values are by finite differences
+    diff_median = np.convolve(log_volume,outl_kern,'same')
+    # Values to replace
+    median_rep = sig.medfilt(log_volume,median_filt)
+    # Detect outliers
+    outliers = diff_median**2>outlier_th**2
+    # Fix extremes
+    outliers[[0,-1]] = False
+    # Remove outliers
+    log_volume[outliers] = median_rep[outliers]
+
+    # COMPUTING DERIVATIVES
+    # Removing noise
+    avg_log_volume = np.convolve(log_volume,avg_kern,'same')/np.sum(avg_kern)
+    # Computing differences
+    diff_log_volume = np.convolve(avg_log_volume,diff_kern,'same')
+    # Smoothing
+    diff_log_volume = np.convolve(diff_log_volume,avg_kern_diff,'same')/np.sum(avg_kern_diff)
+    # Computing average growth
+    avg_growth = np.mean(diff_log_volume[(diff_log_volume**2<4)&(diff_log_volume>0)])
+    # Removing the extremes
+    diff_log_volume[diff_log_volume**2>4] = avg_growth
+
+    # COMPUTING THE MOLTS
+    molts = np.convolve(diff_log_volume<avg_growth*molt_th,mlt_kern,'same')/np.sum(mlt_kern)>.5
+
+    #outliers
+    #log_volume
+    #diff_log_volume
+    return molts
+
+def molt_analysis(molts, time = None, bwd = 0, fwd = 0, time_th = 0, T_correct = 0):
+    # Compute the indices
+    idx = np.arange(0,molts.shape[0])
+
+    # Check if time is given, otherwise use index
+    if np.sum(time == None):
+        time = idx
+
+    # Remove possible molts at earlier timepoints
+    molts[time<time_th] = 0
+
+    # Finding the changes
+    changes = np.diff(molts.astype(int), prepend=0)
+
+    # Computing molt entry and exit times
+    molt_entry = time[idx[changes ==  1]+bwd]
+    molt_exit  = time[idx[changes == -1]+fwd]
+
+    n_molts = molt_entry.shape[0]
+
+    # Checking last molt exit
+    if molt_exit.shape[0]<molt_entry.shape[0]:
+        molt_exit = np.append(molt_exit,time[-1])
+
+    # Correcting gaps if necessary
+    correction_metric = (molt_entry[1:]-molt_exit[:-1])>T_correct
+    idx_correction = np.append(True, correction_metric)
+    molt_entry = molt_entry[idx_correction]
+    molt_exit  = molt_exit[idx_correction]
+
+    # Computing the molt duration
+    molt_duration = molt_exit-molt_entry
+
+
+    # Creating pandas dataframe column names
+    str_molt_entry     = ['Molt_entry_'+str(x+1) for x in range(molt_entry.shape[0])]
+    str_molt_exit      = ['Molt_exit_' +str(x+1) for x in range(molt_exit.shape[0])]
+    str_molt_duration  = ['Molt_duration_' +str(x+1) for x in range(molt_duration.shape[0])]
+
+    # Creating pandas dataframe
+    molts_df = pd.DataFrame(data = [np.append(molt_entry, molt_exit)],
+                      columns = np.append(str_molt_entry, str_molt_exit))
+
+    # Ordering the dataframe
+    molts_df = molts_df.sort_values(by = 0, ascending=True, axis=1)
+
+    # Adding the duration
+    molts_df = molts_df.join(pd.DataFrame([dict(zip(str_molt_duration, molt_duration))]))
+
+    return molts_df, n_molts
+
+def multiple_regression(data, dep_var, indep_var,  condition_variable = 'Condition_default', reference_conditon = 'Control_default', print_outliers = False):
+    # Subsetting
+    subset = data[[dep_var]+indep_var]
+
+    # Check whether you run this for more than one condition
+    if len(indep_var) == 1:
+        subset[condition_variable] = reference_conditon
+        indep_var = indep_var + [condition_variable]
+
+    # Preparing
+    subset['internal_noise'], subset['signal'] = [1., 0.]
+
+    # Turning into dummy variables
+    types = pd.unique(subset[condition_variable])
+    # Selecting the reference
+    if (not reference_conditon) or (reference_conditon == 0): type_vec = types[1:] # Set the first as reference
+    else: type_vec = types[types!=reference_conditon]
+
+    # Selecting the variables
+    for type_sel in type_vec: subset[type_sel] = (subset[condition_variable] == type_sel).astype(float)
+    subset_reg = subset.drop([condition_variable,'signal'], axis = 1)
+
+    # Computing the sort
+    result = sm.OLS(subset_reg.iloc[:,0], subset_reg.iloc[:,1:]).fit()
+
+    # Storing the results
+    # Creating
+    param_df = subset[['internal_noise','signal']+indep_var].groupby(indep_var[1]).mean()
+    #Parameters
+    param_df[indep_var[0]] = result.params[indep_var[0]]
+    param_df['internal_noise'] = result.params['internal_noise']
+    # For each sample
+    for type_sel in type_vec: param_df.loc[type_sel,'signal'] = result.params[type_sel]
+    # Std
+    param_df[indep_var[0]+'_stderr'] = result.bse[indep_var[0]]
+    param_df['internal_noise_stderr'] = result.bse['internal_noise']
+    for type_sel in type_vec: param_df.loc[type_sel,'signal_stderr'] = result.bse[type_sel]
+    # Pvalues
+    param_df[indep_var[0]+'_pval'] = result.pvalues[indep_var[0]]
+    param_df['internal_noise_pval'] = result.pvalues['internal_noise']
+    for type_sel in type_vec: param_df.loc[type_sel,'signal_pval'] = result.pvalues[type_sel]
+
+    # Model statistics
+    param_df['fval'] = result.f_pvalue
+    param_df['r_squared'] = result.rsquared
+
+    # Renaming
+    param_df.rename(columns={"mean_background":"bg_factor"},inplace=True)
+    param_df.rename(columns={"mean_background_stderr":"bg_factor_stderr"},inplace=True)
+    param_df.rename(columns={"mean_background_pval":"bg_factor_pval"},inplace=True)
+
+    # Give an alert of outliers
+    if (result.outlier_test()['bonf(p)'].sum() != subset.shape[0]) and print_outliers:
+        print('Outliers found at: ')
+        print(data.loc[result.outlier_test()['bonf(p)']<1])
+
+    return param_df
